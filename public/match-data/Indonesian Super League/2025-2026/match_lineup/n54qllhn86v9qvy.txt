@@ -1,0 +1,836 @@
+{
+  "confirmed": 1,
+  "home_formation": "4-4-2",
+  "away_formation": "5-3-2",
+  "coach_id": {
+    "home": "9dn1m1gh2k8moep",
+    "away": "9vjxm8gh636r6od"
+  },
+  "lineup": {
+    "home": [
+      {
+        "id": "1l4rjnhz780m7vx",
+        "first": 1,
+        "captain": 0,
+        "name": "Mike Hauptmeijer",
+        "logo": "https://img.thesports.com/football/player/452dda95c22913aed1fa257f8ff3a4f2.png",
+        "shirt_number": 1,
+        "position": "G",
+        "x": 50,
+        "y": 12,
+        "rating": "0.0"
+      },
+      {
+        "id": "l7oqdeh052ger51",
+        "first": 1,
+        "captain": 0,
+        "name": "Rizky Dwi Pangestu",
+        "logo": "https://img.thesports.com/football/player/215b248e96e5c301fbc35f3aff0906e4.png",
+        "shirt_number": 16,
+        "position": "D",
+        "x": 13,
+        "y": 32,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "80",
+            "minute": 80,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "y0or5jhen42dqwz",
+              "name": "Made Andhika"
+            },
+            "out_player": {
+              "id": "l7oqdeh052ger51",
+              "name": "Rizky Dwi Pangestu"
+            }
+          }
+        ]
+      },
+      {
+        "id": "965mkyhewd9lr1g",
+        "first": 1,
+        "captain": 0,
+        "name": "Kadek Arel",
+        "logo": "https://img.thesports.com/football/player/997de2c43b27fc47d77f647396a90520.png",
+        "shirt_number": 4,
+        "position": "D",
+        "x": 36,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "n54qllhjp15dqvy",
+        "first": 1,
+        "captain": 0,
+        "name": "João Vitor Ferrari Silva",
+        "logo": "https://img.thesports.com/football/player/b914b15b0acb232cab34bb5671a417df.png",
+        "shirt_number": 2,
+        "position": "D",
+        "x": 64,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "x7lm7phpnd8m2wd",
+        "first": 1,
+        "captain": 1,
+        "name": "Ricky Fajrin Saputra",
+        "logo": "https://img.thesports.com/football/player/8b2e49b7cd7b676de286f25a96a2289f.jpeg",
+        "shirt_number": 24,
+        "position": "D",
+        "x": 87,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "318q66hjn17qo9j",
+        "first": 1,
+        "captain": 0,
+        "name": "Jordy Bruijn",
+        "logo": "https://img.thesports.com/football/player/cc9d3413c63179fd484e3327f0aa6e97.png",
+        "shirt_number": 8,
+        "position": "M",
+        "x": 13,
+        "y": 62,
+        "rating": "0.0"
+      },
+      {
+        "id": "pxwrxlh9367lryk",
+        "first": 1,
+        "captain": 0,
+        "name": "I Kadek Agung Widnyana",
+        "logo": "https://img.thesports.com/football/player/8f70e43a549968058e8c784db1aefbcf.png",
+        "shirt_number": 18,
+        "position": "M",
+        "x": 36,
+        "y": 62,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "77",
+            "minute": 77,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "x7lm7phw6ywjm2w",
+              "name": "Rahmat Arjuna Reski"
+            },
+            "out_player": {
+              "id": "pxwrxlh9367lryk",
+              "name": "I Kadek Agung Widnyana"
+            }
+          }
+        ]
+      },
+      {
+        "id": "2y8m4zhjeg2ql07",
+        "first": 1,
+        "captain": 0,
+        "name": "Tim Receveur",
+        "logo": "https://img.thesports.com/football/player/a2f13752e8831234bdf18b2a62095cb6.png",
+        "shirt_number": 14,
+        "position": "M",
+        "x": 64,
+        "y": 62,
+        "rating": "0.0"
+      },
+      {
+        "id": "dn1m1gh8jxdmoep",
+        "first": 1,
+        "captain": 0,
+        "name": "Brandon Wilson",
+        "logo": "https://img.thesports.com/football/player/72110542b3d4505800fe7a36b4a750c4.png",
+        "shirt_number": 6,
+        "position": "M",
+        "x": 87,
+        "y": 62,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "46",
+            "minute": 45,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "k82rekh33n5nrep",
+              "name": "Maouri Ananda Yves Ramli Simon"
+            },
+            "out_player": {
+              "id": "dn1m1gh8jxdmoep",
+              "name": "Brandon Wilson"
+            }
+          }
+        ]
+      },
+      {
+        "id": "pxwrxlh1619yryk",
+        "first": 1,
+        "captain": 0,
+        "name": "Boris Kopitovic",
+        "logo": "https://img.thesports.com/football/player/7b02bb38db5cd6974561a43d42a0e486.png",
+        "shirt_number": 9,
+        "position": "F",
+        "x": 35,
+        "y": 90,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "87",
+            "minute": 87,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "l7oqdehl2kvxr51",
+              "name": "Jens Raven"
+            },
+            "out_player": {
+              "id": "pxwrxlh1619yryk",
+              "name": "Boris Kopitovic"
+            }
+          }
+        ]
+      },
+      {
+        "id": "6ypq3nh5d2oemd7",
+        "first": 1,
+        "captain": 0,
+        "name": "Thijmen Goppel",
+        "logo": "https://img.thesports.com/football/player/f1557ecc9aec9c3c07ad909e97782d6c.png",
+        "shirt_number": 7,
+        "position": "F",
+        "x": 65,
+        "y": 90,
+        "rating": "0.0"
+      },
+      {
+        "id": "zp5rzghp51lyq82",
+        "first": 0,
+        "captain": 0,
+        "name": "I Gede Agus Mahendra",
+        "logo": "https://img.thesports.com/football/player/b0eecd9677b185606ccec81e12d595dc.png",
+        "shirt_number": 93,
+        "position": "D",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "x7lm7phw6ywjm2w",
+        "first": 0,
+        "captain": 0,
+        "name": "Rahmat Arjuna Reski",
+        "logo": "https://img.thesports.com/football/player/09f195eb8e1b7ce8d3179251138b505f.png",
+        "shirt_number": 47,
+        "position": "F",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "77",
+            "minute": 77,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "x7lm7phw6ywjm2w",
+              "name": "Rahmat Arjuna Reski"
+            },
+            "out_player": {
+              "id": "pxwrxlh9367lryk",
+              "name": "I Kadek Agung Widnyana"
+            }
+          }
+        ]
+      },
+      {
+        "id": "1l4rjnhzzogkm7v",
+        "first": 0,
+        "captain": 0,
+        "name": "Fitrul Dwi·Rustapa",
+        "logo": "https://img.thesports.com/football/player/151eac9808a93d0947e71d7361230cc4.png",
+        "shirt_number": 95,
+        "position": "G",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "1l4rjnhx1569m7v",
+        "first": 0,
+        "captain": 0,
+        "name": "Mirza Mustafić",
+        "logo": "https://img.thesports.com/football/player/96918894fd41d8a6b0ef09e4edf8a3d1.png",
+        "shirt_number": 10,
+        "position": "M",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "77",
+            "minute": 77,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "1l4rjnhx1569m7v",
+              "name": "Mirza Mustafić"
+            },
+            "out_player": {
+              "id": "k82rekh33n5nrep",
+              "name": "Maouri Ananda Yves Ramli Simon"
+            }
+          }
+        ]
+      },
+      {
+        "id": "dn1m1ghnk3domoe",
+        "first": 0,
+        "captain": 0,
+        "name": "Muhammad Rahmat",
+        "logo": "https://img.thesports.com/football/player/3382c0ea3d9aee40e1ebde89045ca56b.jpeg",
+        "shirt_number": 91,
+        "position": "M",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "k82rekh33n5nrep",
+        "first": 0,
+        "captain": 0,
+        "name": "Maouri Ananda Yves Ramli Simon",
+        "logo": "https://img.thesports.com/football/player/a1f583980ad3c86cf47a1c5ae42b1ad6.png",
+        "shirt_number": 42,
+        "position": "M",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "46",
+            "minute": 45,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "k82rekh33n5nrep",
+              "name": "Maouri Ananda Yves Ramli Simon"
+            },
+            "out_player": {
+              "id": "dn1m1gh8jxdmoep",
+              "name": "Brandon Wilson"
+            }
+          },
+          {
+            "type": 9,
+            "time": "77",
+            "minute": 77,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "1l4rjnhx1569m7v",
+              "name": "Mirza Mustafić"
+            },
+            "out_player": {
+              "id": "k82rekh33n5nrep",
+              "name": "Maouri Ananda Yves Ramli Simon"
+            }
+          }
+        ]
+      },
+      {
+        "id": "l7oqdehl2kvxr51",
+        "first": 0,
+        "captain": 0,
+        "name": "Jens Raven",
+        "logo": "https://img.thesports.com/football/player/ad2b678738a8bf2765342018a488067c.png",
+        "shirt_number": 19,
+        "position": "F",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "87",
+            "minute": 87,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "l7oqdehl2kvxr51",
+              "name": "Jens Raven"
+            },
+            "out_player": {
+              "id": "pxwrxlh1619yryk",
+              "name": "Boris Kopitovic"
+            }
+          }
+        ]
+      },
+      {
+        "id": "y39mp1hpj5ymojx",
+        "first": 0,
+        "captain": 0,
+        "name": "Yabes Roni Malaifani",
+        "logo": "https://img.thesports.com/football/player/2302d19c17975f3356128aaead57857b.png",
+        "shirt_number": 11,
+        "position": "M",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "y0or5jhen42dqwz",
+        "first": 0,
+        "captain": 0,
+        "name": "Made Andhika",
+        "logo": "https://img.thesports.com/football/player/1e09b969ae2a2097ba99f1350811cc45.png",
+        "shirt_number": 33,
+        "position": "D",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "80",
+            "minute": 80,
+            "addtime": 0,
+            "belong": 1,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "y0or5jhen42dqwz",
+              "name": "Made Andhika"
+            },
+            "out_player": {
+              "id": "l7oqdeh052ger51",
+              "name": "Rizky Dwi Pangestu"
+            }
+          }
+        ]
+      },
+      {
+        "id": "8yomo4hv0ednq0j",
+        "first": 0,
+        "captain": 0,
+        "name": "dikri yusron",
+        "logo": "https://img.thesports.com/football/player/63cd1b83a93eef8ba25ae24775cef518.png",
+        "shirt_number": 31,
+        "position": "G",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "k82rekhyx2ygrep",
+        "first": 0,
+        "captain": 0,
+        "name": "Bagas Adi Nugroho",
+        "logo": "https://img.thesports.com/football/player/b725198e3111fbad5d8e638576e067c1.jpeg",
+        "shirt_number": 5,
+        "position": "D",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      }
+    ],
+    "away": [
+      {
+        "id": "dj2ryohn93jq1zp",
+        "first": 1,
+        "captain": 0,
+        "name": "Igor Rodrigues",
+        "logo": "https://img.thesports.com/football/player/d2d1e55779d1e6881f7f5d1cb4e0b53a.png",
+        "shirt_number": 29,
+        "position": "G",
+        "x": 50,
+        "y": 12,
+        "rating": "0.0"
+      },
+      {
+        "id": "vjxm8gh846jr6od",
+        "first": 1,
+        "captain": 0,
+        "name": "Tamirlan Kozubaev",
+        "logo": "https://img.thesports.com/football/player/1c6e41af16a3b925077a334ba254a199.png",
+        "shirt_number": 5,
+        "position": "D",
+        "x": 12,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "zp5rzgh15peq82w",
+        "first": 1,
+        "captain": 0,
+        "name": "Ryuji Utomo",
+        "logo": "https://img.thesports.com/football/player/f62a85003c8d2888a216a01db5792da0.png",
+        "shirt_number": 4,
+        "position": "D",
+        "x": 31,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "n54qllhxzgppqvy",
+        "first": 1,
+        "captain": 0,
+        "name": "Javlon Guseynov",
+        "logo": "https://img.thesports.com/football/player/91591da6a27f2887861dc8a5d6d822d9.png",
+        "shirt_number": 19,
+        "position": "D",
+        "x": 50,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "8yomo4h25n11q0j",
+        "first": 1,
+        "captain": 0,
+        "name": "Mario·Jardel",
+        "logo": "https://img.thesports.com/football/player/952f522616f08be882f4291a9f6692aa.png",
+        "shirt_number": 66,
+        "position": "D",
+        "x": 69,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "965mkyh3wypyr1g",
+        "first": 1,
+        "captain": 1,
+        "name": "Muhammad Toha",
+        "logo": "https://img.thesports.com/football/player/5231c7f112715eb74dca4a3951f6fd20.png",
+        "shirt_number": 11,
+        "position": "D",
+        "x": 88,
+        "y": 32,
+        "rating": "0.0"
+      },
+      {
+        "id": "965mkyh3w9yjr1g",
+        "first": 1,
+        "captain": 0,
+        "name": "Bae Sinyeong",
+        "logo": "https://img.thesports.com/football/player/69ba556dc37378d4f4937045770177f7.png",
+        "shirt_number": 33,
+        "position": "M",
+        "x": 24,
+        "y": 60,
+        "rating": "0.0"
+      },
+      {
+        "id": "2y8m4zh8pnpxql0",
+        "first": 1,
+        "captain": 0,
+        "name": "Hokky Caraka",
+        "logo": "https://img.thesports.com/football/player/e60ef9366cbbc36e4193ffdc08da7f78.png",
+        "shirt_number": 80,
+        "position": "M",
+        "x": 50,
+        "y": 60,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "68",
+            "minute": 68,
+            "addtime": 0,
+            "belong": 2,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "dn1m1ghn4z69moe",
+              "name": "Ahmad Nur·Hardianto"
+            },
+            "out_player": {
+              "id": "2y8m4zh8pnpxql0",
+              "name": "Hokky Caraka"
+            }
+          }
+        ]
+      },
+      {
+        "id": "zp5rzghpx9zq82w",
+        "first": 1,
+        "captain": 0,
+        "name": "Pablo Ganet",
+        "logo": "https://img.thesports.com/football/player/e83744924ec2b7688ffbabdc82cbe4d9.png",
+        "shirt_number": 8,
+        "position": "M",
+        "x": 76,
+        "y": 60,
+        "rating": "0.0"
+      },
+      {
+        "id": "2y8m4zhgkx2pql0",
+        "first": 1,
+        "captain": 0,
+        "name": "Aleksa Andrejić",
+        "logo": "https://img.thesports.com/football/player/8c6037b9651f29353edf69c4dfda6bb0.png",
+        "shirt_number": 93,
+        "position": "F",
+        "x": 35,
+        "y": 90,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "68",
+            "minute": 68,
+            "addtime": 0,
+            "belong": 2,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "8yomo4hvzvvq0j6",
+              "name": "Éber Bessa"
+            },
+            "out_player": {
+              "id": "2y8m4zhgkx2pql0",
+              "name": "Aleksa Andrejić"
+            }
+          }
+        ]
+      },
+      {
+        "id": "dn1m1ghed59jmoe",
+        "first": 1,
+        "captain": 0,
+        "name": "Rayco Rodriguez",
+        "logo": "https://img.thesports.com/football/player/f764369a6b8afc874ccde313b41cc8ba.png",
+        "shirt_number": 7,
+        "position": "F",
+        "x": 65,
+        "y": 90,
+        "rating": "0.0"
+      },
+      {
+        "id": "jw2r09hjegy7rz8",
+        "first": 0,
+        "captain": 0,
+        "name": "Esal Sahrul",
+        "logo": "https://img.thesports.com/football/player/c094eabb341ddb8e6c4bf28dcd7db406.png",
+        "shirt_number": 99,
+        "position": "F",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "4jwq2ghv9yzwm0v",
+        "first": 0,
+        "captain": 0,
+        "name": "Kurniawan Kartika Aji",
+        "logo": "https://img.thesports.com/football/player/1285eeb247a693201fed848545cfb600.png",
+        "shirt_number": 96,
+        "position": "G",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "8yomo4hvzvvq0j6",
+        "first": 0,
+        "captain": 0,
+        "name": "Éber Bessa",
+        "logo": "https://img.thesports.com/football/player/b9ca8236d1f54e94ddcac2f384228be1.png",
+        "shirt_number": 10,
+        "position": "M",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "68",
+            "minute": 68,
+            "addtime": 0,
+            "belong": 2,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "8yomo4hvzvvq0j6",
+              "name": "Éber Bessa"
+            },
+            "out_player": {
+              "id": "2y8m4zhgkx2pql0",
+              "name": "Aleksa Andrejić"
+            }
+          }
+        ]
+      },
+      {
+        "id": "dn1m1ghn4z69moe",
+        "first": 0,
+        "captain": 0,
+        "name": "Ahmad Nur·Hardianto",
+        "logo": "https://img.thesports.com/football/player/bd9dbbefa458bc03e4ba9646df602486.png",
+        "shirt_number": 9,
+        "position": "F",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0",
+        "incidents": [
+          {
+            "type": 9,
+            "time": "68",
+            "minute": 68,
+            "addtime": 0,
+            "belong": 2,
+            "home_score": 0,
+            "away_score": 0,
+            "in_player": {
+              "id": "dn1m1ghn4z69moe",
+              "name": "Ahmad Nur·Hardianto"
+            },
+            "out_player": {
+              "id": "2y8m4zh8pnpxql0",
+              "name": "Hokky Caraka"
+            }
+          }
+        ]
+      },
+      {
+        "id": "8yomo4hvpojjq0j",
+        "first": 0,
+        "captain": 0,
+        "name": "Charisma Fathoni",
+        "logo": "https://img.thesports.com/football/player/0ada0d0eb906cab931ba89f2672abb56.png",
+        "shirt_number": 15,
+        "position": "D",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "l7oqdeh0ve3dr51",
+        "first": 0,
+        "captain": 0,
+        "name": "Ahmad Fahd",
+        "logo": "https://img.thesports.com/football/player/8bd4580d620a84e237d8691f4e5b3527.png",
+        "shirt_number": 22,
+        "position": "M",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "x7lm7ph9d5vem2w",
+        "first": 0,
+        "captain": 0,
+        "name": "Rafi Pamungkas",
+        "logo": "https://img.thesports.com/football/player/68fb115f9cfe788adfc0f3b8420a1afe.png",
+        "shirt_number": 69,
+        "position": "G",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "x7lm7ph9d11m2wd",
+        "first": 0,
+        "captain": 0,
+        "name": "Dejan Račić",
+        "logo": "https://img.thesports.com/football/player/1209920c0e17ec1982d07bf952fbb4d5.png",
+        "shirt_number": 44,
+        "position": "F",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "6ypq3nhw24n3md7",
+        "first": 0,
+        "captain": 0,
+        "name": "Andrean Rindorindo",
+        "logo": "https://img.thesports.com/football/player/661739cedf0942ebd72e379f5fc45e7b.png",
+        "shirt_number": 92,
+        "position": "D",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "k82rekh3dvz1rep",
+        "first": 0,
+        "captain": 0,
+        "name": "Andriano Saputra",
+        "logo": "https://img.thesports.com/football/player/206c233d6e362767d8a5ef16adb81616.png",
+        "shirt_number": 30,
+        "position": "D",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "y39mp1h1nd3ymoj",
+        "first": 0,
+        "captain": 0,
+        "name": "Evan Ajid Tuhuteru",
+        "logo": "",
+        "shirt_number": 6,
+        "position": "M",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      },
+      {
+        "id": "dn1m1ghoxy6moep",
+        "first": 0,
+        "captain": 0,
+        "name": "Zalnando",
+        "logo": "https://img.thesports.com/football/player/03116c50d1fec72fb3dd13c2c97c3483.png",
+        "shirt_number": 27,
+        "position": "D",
+        "x": 0,
+        "y": 0,
+        "rating": "0.0"
+      }
+    ]
+  },
+  "injury": {
+    "home": [],
+    "away": [
+      {
+        "id": "vjxm8ghpk0x4r6o",
+        "name": "Yardan·Yafi",
+        "position": "F",
+        "logo": "https://img.thesports.com/football/player/4342b3822b7e9d402bd02ed053a83700.png",
+        "type": 1,
+        "injury_id": "0l965mkyh2r1ge4",
+        "reason": "Unknown Injury",
+        "start_time": 1754064000,
+        "end_time": 0,
+        "missed_matches": 34
+      }
+    ]
+  }
+}
