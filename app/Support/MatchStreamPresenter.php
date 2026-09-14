@@ -10,9 +10,7 @@ class MatchStreamPresenter
     {
         $stream = $match->relationLoaded('stream') ? $match->stream : $match->stream()->first();
 
-        $match->setAttribute('has_stream', filled($stream?->playback_url));
-        $match->setAttribute('playback_url', $stream?->playback_url);
-        $match->setAttribute('stream_quality', $stream?->stream_quality);
+        $match->setAttribute('has_stream', filled($stream));
 
         return $match;
     }

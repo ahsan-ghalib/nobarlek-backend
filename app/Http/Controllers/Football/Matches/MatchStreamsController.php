@@ -15,16 +15,13 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class MatchStreamsController extends Controller
 {
     /**
-     * Matches that currently have a watchable stream (playback_url present).
+     * Matches that currently have a watchable stream (listed by TheSports).
      */
     public function __invoke(Request $request): JsonResponse
     {
         $oddType = $request->input('odd_type', 'eu');
 
-        $streamMatchIds = MatchStream::query()
-            ->whereNotNull('playback_url')
-            ->where('playback_url', '!=', '')
-            ->pluck('match_id');
+        $streamMatchIds = MatchStream::query()->pluck('match_id');
 
         if ($streamMatchIds->isEmpty()) {
             return $this->jsonResponse([
@@ -56,7 +53,7 @@ class MatchStreamsController extends Controller
                     ->with([
                         'homeTeam:team_id,short_name,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
                         'awayTeam:team_id,short_name,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-                        'stream:match_id,playback_url,sport_id,match_time,synced_at,pushurl1,pushurl2',
+                        'stream:match_id,sport_id,match_time,synced_at',
                         'matchOdd' => fn ($q) => $q->where('company_id', '=', 2)->where('type', '=', $oddType),
                     ])
                     ->orderBy('match_time');

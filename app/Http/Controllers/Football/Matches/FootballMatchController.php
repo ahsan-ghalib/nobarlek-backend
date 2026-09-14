@@ -49,7 +49,7 @@ class FootballMatchController extends Controller
                     ->with([
                         'homeTeam:team_id,short_name,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
                         'awayTeam:team_id,short_name,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-                        'stream:match_id,playback_url,sport_id,match_time,synced_at,pushurl1,pushurl2',
+                        'stream:match_id,sport_id,match_time,synced_at',
                         'matchOdd' => fn ($query) => $query->where('company_id', '=', 2)->where('type', '=', $request->odd_type),
                     ])
                     ->when($request->is_live, function (Builder $query) {
@@ -65,7 +65,7 @@ class FootballMatchController extends Controller
                     ->when($request->is_finished, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::END->value))
                     ->when($request->is_scheduled, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::NOT_STARTED->value))
                     ->when($request->boolean('has_stream'), function (Builder $query) {
-                        $query->whereHas('stream', fn (Builder $q) => $q->whereNotNull('playback_url')->where('playback_url', '!=', ''));
+                        $query->whereHas('stream');
                     })
                     ->tap(fn (Builder $query) => MatchTimeQuery::applyBetween($query, $startDate, $endDate, true));
             })

@@ -15,9 +15,6 @@ class MatchStream extends Model
         'match_id',
         'sport_id',
         'match_time',
-        'pushurl1',
-        'pushurl2',
-        'playback_url',
         'synced_at',
     ];
 
@@ -29,14 +26,11 @@ class MatchStream extends Model
 
     protected $hidden = [
         'id',
-        'pushurl1',
-        'pushurl2',
         'created_at',
         'updated_at',
     ];
 
     protected $appends = [
-        'stream_quality',
         'has_stream',
     ];
 
@@ -45,33 +39,13 @@ class MatchStream extends Model
         return $this->belongsTo(FootballMatch::class, 'match_id', 'match_id');
     }
 
-    public function streamQuality(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => filled($this->pushurl2) ? 'hd' : (filled($this->pushurl1) ? 'sd' : null),
-        );
-    }
-
+    /**
+     * Presence of a row means TheSports lists a video signal for this match.
+     */
     public function hasStream(): Attribute
     {
         return Attribute::make(
-            get: fn () => filled($this->playback_url),
+            get: fn () => true,
         );
-    }
-
-    /**
-     * Prefer English HD (pushurl2), fall back to SD (pushurl1).
-     */
-    public function preferredPushUrl(): ?string
-    {
-        if (filled($this->pushurl2)) {
-            return $this->pushurl2;
-        }
-
-        if (filled($this->pushurl1)) {
-            return $this->pushurl1;
-        }
-
-        return null;
     }
 }
