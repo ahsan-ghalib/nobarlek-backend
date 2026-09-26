@@ -25,7 +25,7 @@ class MatchOverviewController extends Controller
             'homeCoach:coach_id,name,logo',
             'awayCoach:coach_id,name,logo',
             'referee:referee_id,name,logo',
-            'venue:venue_id,name',
+            'venue:venue_id,name,city,country,capacity',
             'matchIncidents' => fn ($query) => $query->latest('time'),
             'matchChartStatistic',
             'matchStatistics',

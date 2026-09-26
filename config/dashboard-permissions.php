@@ -25,6 +25,13 @@ return [
             ],
         ],
         [
+            'name' => 'Homepage',
+            'permissions' => [
+                ['name' => 'home.featured-match', 'label' => 'Manage homepage featured match'],
+                ['name' => 'competitions.top', 'label' => 'Manage top competitions'],
+            ],
+        ],
+        [
             'name' => 'Footer',
             'permissions' => [
                 ['name' => 'footer.settings', 'label' => 'Manage site / footer settings'],

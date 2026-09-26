@@ -44,6 +44,7 @@ class Competition extends Model
         'primary_color',
         'secondary_color',
         'priority',
+        'top_order',
         'meta_title',
         'meta_description',
         'meta_keywords',

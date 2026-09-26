@@ -10,6 +10,8 @@ use App\Http\Controllers\Dashboard\Competitions\CompetitionImageController as Da
 use App\Http\Controllers\Dashboard\Competitions\CompetitionSeoController as DashboardCompetitionSeoController;
 use App\Http\Controllers\Dashboard\Footer\FooterSettingsController;
 use App\Http\Controllers\Dashboard\FooterMatchLinks\FooterMatchLinkController as DashboardFooterMatchLinkController;
+use App\Http\Controllers\Dashboard\Home\HomeFeaturedMatchController as DashboardHomeFeaturedMatchController;
+use App\Http\Controllers\Dashboard\Competitions\TopCompetitionController as DashboardTopCompetitionController;
 use App\Http\Controllers\Dashboard\Home\HomeSeoController;
 use App\Http\Controllers\Dashboard\Matches\FootballMatchController as DashboardFootballMatchController;
 use App\Http\Controllers\Dashboard\Matches\FootballMatchSeoController as DashboardFootballMatchSeoController;
@@ -37,6 +39,7 @@ use App\Http\Controllers\Football\Competitions\CompetitionSeasonResultsControlle
 use App\Http\Controllers\Football\Competitions\CompetitionStandingController;
 use App\Http\Controllers\Football\Competitions\CompetitionStatisticController;
 use App\Http\Controllers\Football\Competitions\PopularCompetitionController;
+use App\Http\Controllers\Football\Competitions\CompetitionDirectoryController;
 use App\Http\Controllers\Football\CountryController;
 use App\Http\Controllers\Football\FavoriteController;
 use App\Http\Controllers\Football\Matches\CompetitionFootballMatchController;
@@ -76,6 +79,7 @@ use App\Http\Controllers\Football\Teams\TeamTopScorerController;
 use App\Http\Controllers\Football\Teams\TeamTransferController;
 use App\Http\Controllers\FooterController;
 use App\Http\Controllers\FooterMatchLinkController;
+use App\Http\Controllers\HomeFeaturedMatchController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\Seo\HomeSeoController as PublicHomeSeoController;
 use App\Http\Controllers\SiteSettingController;
@@ -109,6 +113,7 @@ Route::get('/timezones', function () {
 Route::apiResource('news', NewsController::class)->only(['index', 'show']);
 Route::apiResource('blogs', BlogController::class)->only(['index', 'show']);
 Route::get('footer-match-links', FooterMatchLinkController::class);
+Route::get('home/featured-match', HomeFeaturedMatchController::class);
 Route::get('site-settings', SiteSettingController::class);
 
 Route::middleware(['scraping.api.scope'])->group(function () {
@@ -130,6 +135,7 @@ Route::middleware(['scraping.api.scope'])->group(function () {
 
         Route::prefix('competitions')->group(function () {
             Route::get('/popular', PopularCompetitionController::class);
+            Route::get('/directory', CompetitionDirectoryController::class);
             Route::get('/{competition}/page-bootstrap', CompetitionPageBootstrapController::class);
             Route::get('/{date?}', CompetitionController::class);
             Route::get('/{competition}/overview/{season?}', CompetitionOverviewController::class);
@@ -219,6 +225,11 @@ Route::prefix('/dashboard')
         Route::get('home/seo', [HomeSeoController::class, 'show']);
         Route::put('home/seo/update', [HomeSeoController::class, 'update']);
 
+        // Homepage featured match (hero banner + ticker)
+        Route::get('home/featured-match', [DashboardHomeFeaturedMatchController::class, 'show']);
+        Route::post('home/featured-match/update', [DashboardHomeFeaturedMatchController::class, 'update']);
+        Route::get('home/featured-match/matches', [DashboardHomeFeaturedMatchController::class, 'search']);
+
         // Profile
         Route::get('profile', [ProfileController::class, 'show']);
         Route::put('profile', [ProfileController::class, 'update']);
@@ -251,6 +262,10 @@ Route::prefix('/dashboard')
         Route::put('players/{player}/seo/update', DashboardPlayerSeoController::class);
         Route::put('players/{player}/about/update', DashboardPlayerAboutController::class);
         Route::post('players/{player}/image/update', DashboardPlayerImageController::class);
+
+        Route::get('top-competitions', [DashboardTopCompetitionController::class, 'index']);
+        Route::put('top-competitions', [DashboardTopCompetitionController::class, 'update']);
+        Route::get('top-competitions/search', [DashboardTopCompetitionController::class, 'search']);
 
         Route::apiResource('competitions', DashboardCompetitionController::class)->only(['index', 'show']);
         Route::put('competitions/{competition}/seo/update', DashboardCompetitionSeoController::class);
