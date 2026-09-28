@@ -9,6 +9,7 @@
 .env
 .env.backup
 .env.production
+temp_auto_push.bat
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
@@ -19,6 +20,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode
 /.zed
 .DS_Store
+.gitignore
+branch_structure.json
