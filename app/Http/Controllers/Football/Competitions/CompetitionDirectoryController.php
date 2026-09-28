@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Support\ScrapingCountryScope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -17,6 +18,14 @@ class CompetitionDirectoryController extends Controller
     private const TYPES = [1 => 'league', 2 => 'cup', 3 => 'friendly'];
 
     public function __invoke()
+    {
+        // Live/today counts over every competition are costly; a minute of staleness is fine here.
+        $key = 'competition-directory:'.(ScrapingCountryScope::shouldApply() ? 'scoped' : 'all');
+
+        return $this->jsonResponse(Cache::remember($key, 60, fn () => $this->directory()), Response::HTTP_OK);
+    }
+
+    private function directory(): array
     {
         $todayStart = now()->startOfDay()->timestamp;
         $todayEnd = now()->endOfDay()->timestamp;
@@ -30,7 +39,7 @@ class CompetitionDirectoryController extends Controller
             MatchStateEnum::PENALTY_SHOOT_OUT->value,
         ];
 
-        $competitions = Competition::query()
+        return Competition::query()
             ->select(['competition_id', 'country_id', 'category_id', 'name', 'short_name', 'logo', 'type', 'top_order'])
             ->with([
                 'country:country_id,name,logo',
@@ -59,8 +68,7 @@ class CompetitionDirectoryController extends Controller
                 $data['is_top'] = $competition->top_order !== null;
 
                 return $data;
-            });
-
-        return $this->jsonResponse($competitions, Response::HTTP_OK);
+            })
+            ->all();
     }
 }

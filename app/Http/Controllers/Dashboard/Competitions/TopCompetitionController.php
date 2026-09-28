@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard\Competitions;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Football\Competitions\SidebarCompetitionController;
 use App\Http\Requests\Dashboard\UpdateTopCompetitionsRequest;
 use App\Models\Competition;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +41,8 @@ class TopCompetitionController extends Controller
                 Competition::query()->where('competition_id', $id)->update(['top_order' => $index + 1]);
             }
         });
+
+        SidebarCompetitionController::forgetCache();
 
         return response()->json([
             'data' => $this->topCompetitions(),

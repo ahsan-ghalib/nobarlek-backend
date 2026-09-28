@@ -30,6 +30,7 @@ class RealtimeMatchDataScrapperCommand extends Command
      */
     public function handle()
     {
-        dispatch(new RealtimeMatchDataScrapperJob());
+        // Own queue so slow scrapers (H2H, squads…) can never delay live scores and minutes.
+        dispatch(new RealtimeMatchDataScrapperJob())->onQueue('live');
     }
 }

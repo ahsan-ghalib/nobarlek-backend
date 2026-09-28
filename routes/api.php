@@ -40,6 +40,7 @@ use App\Http\Controllers\Football\Competitions\CompetitionStandingController;
 use App\Http\Controllers\Football\Competitions\CompetitionStatisticController;
 use App\Http\Controllers\Football\Competitions\PopularCompetitionController;
 use App\Http\Controllers\Football\Competitions\CompetitionDirectoryController;
+use App\Http\Controllers\Football\Competitions\SidebarCompetitionController;
 use App\Http\Controllers\Football\CountryController;
 use App\Http\Controllers\Football\FavoriteController;
 use App\Http\Controllers\Football\Matches\CompetitionFootballMatchController;
@@ -136,6 +137,8 @@ Route::middleware(['scraping.api.scope'])->group(function () {
         Route::prefix('competitions')->group(function () {
             Route::get('/popular', PopularCompetitionController::class);
             Route::get('/directory', CompetitionDirectoryController::class);
+            Route::get('/sidebar', [SidebarCompetitionController::class, 'index']);
+            Route::get('/sidebar/others', [SidebarCompetitionController::class, 'others']);
             Route::get('/{competition}/page-bootstrap', CompetitionPageBootstrapController::class);
             Route::get('/{date?}', CompetitionController::class);
             Route::get('/{competition}/overview/{season?}', CompetitionOverviewController::class);
@@ -146,6 +149,7 @@ Route::middleware(['scraping.api.scope'])->group(function () {
                     Route::get('/teams/{season?}', 'teamStandings');
                     Route::get('/full/{season?}', 'fullTeamStandings');
                     Route::get('/player/{season?}', 'playerStandings');
+                    Route::get('/leaders/{season?}', 'playerLeaders');
                 });
             Route::post('{competition}/schedules/{season?}', CompetitionSchedulesController::class);
             Route::get('{competition}/statistics/{statsTypeEnum}/{column}/{season}', CompetitionStatisticController::class);

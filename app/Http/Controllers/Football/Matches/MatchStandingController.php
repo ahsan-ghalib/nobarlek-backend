@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Football\Matches;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompetitionStandingResource;
 use App\Models\FootballMatch;
-use App\Models\SeasonTopScorer;
 use App\Models\TeamStanding;
+use App\Support\SeasonPlayerLeaders;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,28 +17,28 @@ class MatchStandingController extends Controller
      */
     public function __invoke(Request $request, FootballMatch $footballMatch)
     {
-        $matchStandings = TeamStanding::query()
+        $seasonStandings = fn () => TeamStanding::query()
             ->with([
                 'team:team_id,name,logo',
             ])
             ->where('season_id', '=', $footballMatch->season_id)
-            ->where('stage_id', '=', $footballMatch->stage_id)
-            ->orderByDesc('points')
-            ->get();
+            ->orderByDesc('points');
+
+        // Prefer the match's own stage; many matches carry no stage_id, or the table
+        // is stored under another stage, so fall back to the whole season.
+        $matchStandings = filled($footballMatch->stage_id)
+            ? $seasonStandings()->where('stage_id', '=', $footballMatch->stage_id)->get()
+            : collect();
+
+        if ($matchStandings->isEmpty() && filled($footballMatch->season_id)) {
+            $matchStandings = $seasonStandings()->get();
+        }
 
         $standingRequest = $request->duplicate(['type' => $request->query('type', 'All')]);
         $matchStandings = CompetitionStandingResource::collection($matchStandings)
             ->toArray($standingRequest);
 
-        $topScorer = SeasonTopScorer::query()
-            ->with([
-                'team:team_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-                'player:player_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-            ])
-            ->where('season_id', '=', $footballMatch->season_id)
-            ->limit(50)
-            ->orderByDesc('goals')
-            ->get();
+        $topScorer = SeasonPlayerLeaders::topScorers($footballMatch->season_id, 50);
 
         $competition = $footballMatch->competition;
 

@@ -60,7 +60,10 @@ class FootballMatchController extends Controller
                             MatchStateEnum::OVERTIME->value,
                             MatchStateEnum::OVERTIME_DEPRECATED->value,
                             MatchStateEnum::PENALTY_SHOOT_OUT->value,
-                        ]);
+                        ])
+                            // The feed stops sending matches it drops, which can leave a
+                            // live status behind for good; no real match runs 4h past kick-off.
+                            ->where('match_time', '>=', now()->subHours(4)->timestamp);
                     })
                     ->when($request->is_finished, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::END->value))
                     ->when($request->is_scheduled, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::NOT_STARTED->value))

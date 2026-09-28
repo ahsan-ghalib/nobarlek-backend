@@ -115,8 +115,7 @@ class RealtimeMatchDataScrapingService
                     }
 
                     if ($incidents->count() !== 0) {
-                        MatchIncidents::query()
-                            ->upsert($incidents->toArray(), ['match_id', 'player_id', 'type', 'time', 'in_player_id', 'out_player_id',  'in_player_name', 'out_player_name']);
+                        MatchIncidents::replaceForMatch((string) $matchId, $incidents->values()->all());
                         Log::info('scraper.detail_live.upsert_incidents', [
                             'match_id' => $matchId,
                             'incidents_count' => $incidents->count(),

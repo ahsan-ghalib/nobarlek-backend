@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CompetitionStandingResource;
 use App\Models\Competition;
 use App\Models\Season;
-use App\Models\SeasonPlayerStatistics;
-use App\Models\SeasonTopScorer;
 use App\Models\TeamStanding;
+use App\Support\SeasonPlayerLeaders;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -60,32 +59,20 @@ class CompetitionStandingController extends Controller
     {
         $seasonId = $this->standingsSeasonId($competition, $season);
 
-        $topScorer = SeasonTopScorer::query()
-            ->with([
-                'team:team_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-                'player:player_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-            ])
-            ->where('season_id', $seasonId)
-            ->limit(10)
-            ->orderByDesc('goals')
-            ->get();
+        return $this->jsonResponse(SeasonPlayerLeaders::topScorers($seasonId), Response::HTTP_OK);
+    }
 
-        // The shooter-stat feed is not available for every competition. The
-        // player-stat feed contains the same scorer fields and is already
-        // populated for those seasons, so do not return an empty tab.
-        if ($topScorer->isEmpty()) {
-            $topScorer = SeasonPlayerStatistics::query()
-                ->with([
-                    'team:team_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-                    'player:player_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-                ])
-                ->where('season_id', $seasonId)
-                ->orderByDesc('goals')
-                ->limit(10)
-                ->get();
-        }
+    /**
+     * Top scorers and top assists together, for the competition page's season switcher.
+     */
+    public function playerLeaders(Request $request, Competition $competition, Season $season): JsonResponse
+    {
+        $seasonId = $this->standingsSeasonId($competition, $season);
 
-        return $this->jsonResponse($topScorer, Response::HTTP_OK);
+        return $this->jsonResponse([
+            'top_scorers' => SeasonPlayerLeaders::topScorers($seasonId),
+            'top_assists' => SeasonPlayerLeaders::topAssists($seasonId),
+        ], Response::HTTP_OK);
     }
 
     private function standingsSeasonId(Competition $competition, Season $season): ?string

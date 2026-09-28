@@ -229,10 +229,7 @@ class MatchDataFolderImportService
             });
 
         if ($incidents->isNotEmpty()) {
-            MatchIncidents::query()->upsert(
-                $incidents->toArray(),
-                ['match_id', 'player_id', 'type', 'time', 'in_player_id', 'out_player_id', 'in_player_name', 'out_player_name'],
-            );
+            MatchIncidents::replaceForMatch($matchId, $incidents->values()->all());
         }
 
         if (is_array($score)) {

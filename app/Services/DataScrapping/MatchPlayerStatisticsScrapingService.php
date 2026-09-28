@@ -6,6 +6,7 @@ use App\Models\FootballMatch;
 use App\Models\MatchPlayerStatistic;
 use App\Support\ScrapingCountryScope;
 use App\Traits\FootballScoreApiTrait;
+use Illuminate\Support\Facades\Schema;
 
 class MatchPlayerStatisticsScrapingService
 {
@@ -40,7 +41,7 @@ class MatchPlayerStatisticsScrapingService
                     })
                         ->flatten(1)->chunk(300)->map(function ($chunk) {
                             MatchPlayerStatistic::query()
-                                ->upsert($chunk->toArray(), ['match_id', 'player_id', 'team_id']);
+                                ->upsert($this->toTableRows($chunk->all()), ['match_id', 'player_id', 'team_id']);
                         });
                 });
 
@@ -52,5 +53,27 @@ class MatchPlayerStatisticsScrapingService
 
             return ['error' => $errorMessage];
         }
+    }
+
+    /**
+     * TheSports adds stat fields over time (e.g. big_chance_created); unknown keys made
+     * the whole insert fail. Keep only table columns, and give every row the same keys
+     * because a multi-row upsert takes its column list from the first row.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private function toTableRows(array $rows): array
+    {
+        static $columns = null;
+        $columns ??= array_flip(array_diff(
+            Schema::getColumnListing((new MatchPlayerStatistic)->getTable()),
+            ['id', 'created_at', 'updated_at'],
+        ));
+
+        $rows = array_map(fn (array $row) => array_intersect_key($row, $columns), $rows);
+        $keys = array_fill_keys(array_keys(array_merge(...$rows)), null);
+
+        return array_map(fn (array $row) => array_merge($keys, $row), $rows);
     }
 }
