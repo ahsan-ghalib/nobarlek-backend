@@ -36,6 +36,12 @@ class CompetitionDirectoryController extends Controller
         $key = 'competition-directory:'.(ScrapingCountryScope::shouldApply() ? 'scoped' : 'all');
         $all = collect(Cache::remember($key, 60, fn () => $this->directory()));
 
+        // Clients from before pagination send no `page` and expect the plain list;
+        // keep serving it so frontend and backend can be deployed in either order.
+        if (! $request->has('page')) {
+            return $this->jsonResponse($all->values(), Response::HTTP_OK);
+        }
+
         $filter = in_array($request->query('filter'), self::FILTERS, true) ? $request->query('filter') : 'all';
         $sort = in_array($request->query('sort'), self::SORTS, true) ? $request->query('sort') : 'featured';
         $perPage = max(1, min(self::MAX_PER_PAGE, (int) $request->query('per_page', 48)));
