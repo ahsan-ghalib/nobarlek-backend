@@ -53,7 +53,7 @@ class SiteSetting extends Model
     public static function defaults(): array
     {
         return [
-            'site_name' => 'Up Liga',
+            'site_name' => 'NOBARLEK',
             'social_heading' => 'IKUTI KAMI',
             'social_links' => [
                 ['platform' => 'facebook', 'label' => 'Facebook', 'url' => ''],
@@ -79,7 +79,7 @@ class SiteSetting extends Model
             'app_section_description' => 'Aplikasi kami telah dioptimasi untuk telepon anda. Segera unduh gratis!',
             'lite_version_label' => 'Versi lite',
             'privacy_settings_label' => 'Atur Privasi',
-            'copyright_text' => 'Up Liga',
+            'copyright_text' => 'NOBARLEK',
             'terms_url' => '/terms',
             'privacy_policy_url' => '/privacy',
             'terms_content' => 'Ketentuan penggunaan belum diterbitkan.',

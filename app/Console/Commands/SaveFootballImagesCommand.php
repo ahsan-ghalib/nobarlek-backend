@@ -113,7 +113,7 @@ class SaveFootballImagesCommand extends Command
         try {
             $response = Http::timeout(20)
                 ->retry(2, 500)
-                ->withHeaders(['User-Agent' => 'UpLiga Image Downloader'])
+                ->withHeaders(['User-Agent' => 'Nobarlek Image Downloader'])
                 ->get($source);
 
             if (! $response->successful() || $response->body() === '') {
