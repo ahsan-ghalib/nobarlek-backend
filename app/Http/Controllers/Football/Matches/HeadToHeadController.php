@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Football\Matches;
 
+use App\Enums\MatchStateEnum;
 use App\Http\Controllers\Controller;
 use App\Models\FootballMatch;
 use App\Repositories\FootballMatchRepository;
@@ -30,6 +31,9 @@ class HeadToHeadController extends Controller
         $homeHeadToHead = $this->footballMatchRepository->getSingleTeamMatchesOutcomes($footballMatch->home_team_id)
             ->whereIn('football_matches.home_team_id', [$footballMatch->home_team_id, $footballMatch->away_team_id])
             ->WhereIn('football_matches.away_team_id', [$footballMatch->home_team_id, $footballMatch->away_team_id])
+            // Previous meetings only: not this match, nor fixtures that haven't been played.
+            ->where('football_matches.match_id', '!=', $footballMatch->match_id)
+            ->where('football_matches.status_id', '=', MatchStateEnum::END->value)
             ->limit($homeHeadToHeadRows)
             ->get()
             ->map(fn ($match) => H2hMatchScorePresenter::enrich($match));

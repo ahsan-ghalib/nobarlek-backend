@@ -39,7 +39,10 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            // Production serves Laravel under /backend, so files live at APP_URL/backend/storage.
+            // Set PUBLIC_STORAGE_URL when the public storage URL differs from these defaults.
+            'url' => env('PUBLIC_STORAGE_URL')
+                ?: rtrim((string) env('APP_URL'), '/').(env('APP_ENV') === 'production' ? '/backend' : '').'/storage',
             'visibility' => 'public',
             'throw' => false,
         ],

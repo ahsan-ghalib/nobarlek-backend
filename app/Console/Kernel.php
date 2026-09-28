@@ -12,28 +12,37 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('data-scrapping:match-scrapper-command')->everyMinute();
+        // Frequent scrapers run in the background so a slow one can't hold up the others
+        // (schedule:run otherwise runs due commands one after another, delaying the
+        // 30-second live feed), and without overlapping so slow runs don't pile up.
+        $schedule->command('data-scrapping:match-scrapper-command')->everyMinute()->withoutOverlapping()->runInBackground();
         // TheSports video push streams (~72h window); vendor recommends 1 min polling.
-        $schedule->command('data-scrapping:match-stream-scrapper-command')->everyMinute();
+        $schedule->command('data-scrapping:match-stream-scrapper-command')->everyMinute()->withoutOverlapping()->runInBackground();
         // TheSports diary: full day schedule/results (vendor: ~10 min today, ~30 min future days)
-        $schedule->command('data-scrapping:match-diary-scrapper-command')->everyTenMinutes();
-        $schedule->command('data-scrapping:match-diary-scrapper-command --future')->everyThirtyMinutes();
-        $schedule->command('data-scrapping:real-time-match-data-scrapper-command')->everyThirtySeconds();
-        $schedule->command('data-scrapping:match-chart-statistics-scrapper-command')->everyMinute();
-        $schedule->command('data-scrapping:match-team-statistics-scrapper-command')->everyMinute();
-        $schedule->command('data-scrapping:match-player-statistics-scrapper-command')->everyMinute();
-        // $schedule->command('data-scrapping:odds-data-scrapper-command')->everyMinute();
+        $schedule->command('data-scrapping:match-diary-scrapper-command')->everyTenMinutes()->withoutOverlapping()->runInBackground();
+        $schedule->command('data-scrapping:match-diary-scrapper-command --future')->everyThirtyMinutes()->withoutOverlapping()->runInBackground();
+        $schedule->command('data-scrapping:real-time-match-data-scrapper-command')->everyThirtySeconds()->withoutOverlapping()->runInBackground();
+        $schedule->command('data-scrapping:match-chart-statistics-scrapper-command')->everyMinute()->withoutOverlapping()->runInBackground();
+        $schedule->command('data-scrapping:match-team-statistics-scrapper-command')->everyMinute()->withoutOverlapping()->runInBackground();
+        $schedule->command('data-scrapping:match-player-statistics-scrapper-command')->everyMinute()->withoutOverlapping()->runInBackground();
+        // $schedule->command('data-scrapping:odds-data-scrapper-command')->everyMinute()->withoutOverlapping()->runInBackground();
 
-        $schedule->command('data-scrapping:head-to-head-data-scrapper-command')->everyMinute(); // no need to add this command
+        $schedule->command('data-scrapping:head-to-head-data-scrapper-command')->everyMinute()->withoutOverlapping()->runInBackground(); // no need to add this command
 
-        $schedule->command('data-scrapping:data-update-types-scrapper-command')->everyTwoMinutes();
+        $schedule->command('data-scrapping:data-update-types-scrapper-command')->everyTwoMinutes()->withoutOverlapping()->runInBackground();
 
-        $schedule->command('data-scrapping:team-standings-scrapper-command')->everyFiveMinutes(); // run in every hour
+        $schedule->command('data-scrapping:team-standings-scrapper-command')->everyFiveMinutes()->withoutOverlapping()->runInBackground(); // run in every hour
+        // table/live only covers tables that just changed; refresh every current season's
+        // full table daily so leagues without recent live updates still have standings.
+        $schedule->command('data-scrapping:historical-team-standings --current')->dailyAt('0:40')->withoutOverlapping();
 
         $schedule->command('data-scrapping:season-team-statistics-scrapper-command')->hourly();
         $schedule->command('data-scrapping:season-player-statistics-scrapper-command')->hourlyAt(9);
         $schedule->command('data-scrapping:single-match-lineups-scrapper-command')->hourlyAt(15);
         $schedule->command('data-scrapping:season-top-scorer-statistics-scrapper-command')->hourlyAt(17);
+        // The hourly jobs above only follow the last hour of update events; refresh the full
+        // scorer and player tables for current seasons so every league has top scorers/assists.
+        $schedule->command('data-scrapping:season-player-leaders')->dailyAt('1:30')->withoutOverlapping();
         $schedule->command('data-scrapping:stage-scrapper-command')->hourlyAt(19);
 
         $schedule->command('data-scrapping:competition-scrapper-command')->hourly();

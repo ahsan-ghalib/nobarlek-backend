@@ -10,17 +10,18 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 final class MatchTimeQuery
 {
     /**
-     * SQL expression for kickoff unix seconds (`match_time` is stored as varchar).
+     * SQL expression for kickoff unix seconds.
      *
      * @param  bool  $matchTimeOnly  When true, ignore `kickoff_time` (historical / date picker).
+     *                               The bare column lets MySQL use the match_time indexes.
      */
     public static function unixExpression(bool $matchTimeOnly = false): string
     {
         if ($matchTimeOnly) {
-            return "CAST(NULLIF(NULLIF(match_time, ''), '0') AS UNSIGNED)";
+            return 'match_time';
         }
 
-        return 'CAST(COALESCE(NULLIF(kickoff_time, 0), NULLIF(NULLIF(match_time, \'\'), \'0\')) AS UNSIGNED)';
+        return 'COALESCE(NULLIF(kickoff_time, 0), NULLIF(match_time, 0))';
     }
 
     /**

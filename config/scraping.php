@@ -28,20 +28,21 @@ return [
      *
      * `diary_query_type`: request `type` — must be `diary` for date-based schedule (vs `season` + `uuid`).
      *
-     * `diary_date_param`: query key for the calendar day. TheSports commonly expects `time` (unix); `date` often returns code 100003.
+     * `diary_date_param`: query key for the calendar day. `date` with `Ymd` returns the whole day
+     * (e.g. 1199 matches); `time` with a unix timestamp returned only a fraction of them (336).
      *
      * `diary_date_format`: how the date param value is sent.
-     *   - unix_start_of_day (default): Unix timestamp at start of that calendar day in `diary_calendar_timezone`
+     *   - Ymd (default): integer e.g. 20260409
+     *   - unix_start_of_day: Unix timestamp at start of that calendar day in `diary_calendar_timezone`
      *   - Y-m-d: e.g. 2026-04-09
-     *   - Ymd: integer e.g. 20260409
      */
     'diary_calendar_timezone' => env('SCRAPING_DIARY_CALENDAR_TZ', 'UTC'),
 
     'diary_query_type' => env('SCRAPING_DIARY_QUERY_TYPE', 'diary'),
 
-    'diary_date_param' => env('SCRAPING_DIARY_DATE_PARAM', 'time'),
+    'diary_date_param' => env('SCRAPING_DIARY_DATE_PARAM', 'date'),
 
-    'diary_date_format' => env('SCRAPING_DIARY_DATE_FORMAT', 'unix_start_of_day'),
+    'diary_date_format' => env('SCRAPING_DIARY_DATE_FORMAT', 'Ymd'),
 
     /** Optional extra query params merged last (JSON object in env), e.g. {} */
     'diary_extra_request_params' => json_decode((string) env('SCRAPING_DIARY_EXTRA_JSON', '{}'), true) ?: [],

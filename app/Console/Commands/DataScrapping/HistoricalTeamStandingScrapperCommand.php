@@ -11,7 +11,8 @@ class HistoricalTeamStandingScrapperCommand extends Command
 {
     protected $signature = 'data-scrapping:historical-team-standings
                             {--from=1900 : Import seasons from this year onward}
-                            {--competition= : Limit the import to one competition ID}';
+                            {--competition= : Limit the import to one competition ID}
+                            {--current : Only import seasons marked as current}';
 
     protected $description = 'Import historical team standings from the AiScore API';
 
@@ -29,6 +30,10 @@ class HistoricalTeamStandingScrapperCommand extends Command
             ->where('year', '>=', $fromYear)
             ->where('has_table', true)
             ->orderBy('id');
+
+        if ($this->option('current')) {
+            $query->where('is_current', true);
+        }
 
         if ($competitionId = $this->option('competition')) {
             $query->where('competition_id', $competitionId);

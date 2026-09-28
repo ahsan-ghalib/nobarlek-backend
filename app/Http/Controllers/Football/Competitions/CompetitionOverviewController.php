@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Football\Competitions;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\Season;
-use App\Models\SeasonPlayerStatistics;
 use App\Models\Stage;
+use App\Support\SeasonPlayerLeaders;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,17 +17,9 @@ class CompetitionOverviewController extends Controller
      */
     public function __invoke(Request $request, Competition $competition, Season $season)
     {
-        $topScorers = SeasonPlayerStatistics::query()
-            ->with([
-                'team:team_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-                'player:player_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo',
-            ])
-            ->when(isset($season->season_id), fn ($query) => $query->where('season_id', '=', $season->season_id),
-                fn ($query) => $query->where('season_id', '=', $competition->cur_season_id)
-            )
-            ->orderByDesc('goals')
-            ->limit(10)
-            ->get();
+        $seasonId = $season->season_id ?? $competition->cur_season_id;
+        $topScorers = SeasonPlayerLeaders::topScorers($seasonId);
+        $topAssists = SeasonPlayerLeaders::topAssists($seasonId);
 
         $stages = Stage::query()
             ->when(isset($season->season_id), fn ($query) => $query->where('season_id', '=', $season->season_id),
@@ -50,6 +42,7 @@ class CompetitionOverviewController extends Controller
         $data = [
             'overview' => $competition,
             'top_scorer' => $topScorers,
+            'top_assists' => $topAssists,
             'prem_stats' => [
                 'number_of_players' => $competition->loadSum('teams', 'total_players')->teams_sum_total_players,
                 'foreign_players' => $competition->loadSum('teams', 'foreign_players')->teams_sum_foreign_players,

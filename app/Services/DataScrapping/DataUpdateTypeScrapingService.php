@@ -61,7 +61,8 @@ class DataUpdateTypeScrapingService
                         }
                         $mid = (string) ($data['match_id'] ?? '');
                         if ($mid === '') {
-                            return false;
+                            // Season-level updates (standings, scorers, player stats) carry no match_id.
+                            return ScrapingCountryScope::seasonIdAllowed((string) ($data['season_id'] ?? ''));
                         }
                         $cid = $compByMatch[$mid] ?? null;
 

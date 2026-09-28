@@ -74,45 +74,73 @@ class FootballMatch extends Model
         );
     }
 
+    /**
+     * Approximate minutes from the first-half kick-off to the second-half kick-off
+     * (45' plus stoppage time plus the break). Only used when the live feed has not
+     * given us the second-half kick-off yet.
+     */
+    private const FIRST_HALF_AND_BREAK_MINUTES = 62;
+
     public function calculatedMatchTime(): Attribute
     {
         return new Attribute(get: function () {
             $matchStatus = $this->attributes['status_id'] ?? null;
-            $kickoffTime = (int) ($this->attributes['kickoff_time'] ?? 0)
-                ?: (int) ($this->attributes['match_time'] ?? 0);
+            $scheduled = (int) ($this->attributes['match_time'] ?? 0);
+            // TheSports `kickoff_time` is the kick-off of the half in progress (first
+            // half, second half, extra time); 0 until the live feed has sent it.
+            $kickoff = (int) ($this->attributes['kickoff_time'] ?? 0);
 
-            if (!$matchStatus || !$kickoffTime) {
-                return '-';
-            }
-
-            $timezone = \App\Support\ViewerTimeZone::fromRequest();
-            $diffInMints = Carbon::createFromTimestamp((int) $kickoffTime)->timezone($timezone)->diffInMinutes(now()->timezone($timezone));
-
-            if ($matchStatus === MatchStateEnum::FIRST_HALF->value) {
-                $diffInMints += 1;
-            } elseif ($matchStatus === MatchStateEnum::SECOND_HALF->value) {
-                $diffInMints = $diffInMints + 45 + 1;
-            }
-
-            if ($diffInMints < 45) {
-                $matchTime = $diffInMints;
-            } elseif ($diffInMints > 45 && $matchStatus === MatchStateEnum::FIRST_HALF->value) {
-                $matchTime = '45+';
-            } elseif ($matchStatus === MatchStateEnum::HALF_TIME->value) {
-                $matchTime = 'HT';
-            } elseif ($diffInMints > 45 && $diffInMints <= 90 && $matchStatus === MatchStateEnum::SECOND_HALF->value) {
-                $matchTime = $diffInMints;
-            } elseif ($diffInMints > 90 && $matchStatus === MatchStateEnum::SECOND_HALF->value) {
-                $matchTime = '90+';
-            } elseif ($matchStatus === MatchStateEnum::END->value) {
-                $matchTime = 'FT';
-            } elseif($matchStatus === MatchStateEnum::NOT_STARTED->value) {
-                $matchTime = '-';
-            }else {
-                $matchTime = $matchStatus;
-            }
-            return $matchTime;
+            return match ($matchStatus) {
+                null, '' => '-',
+                MatchStateEnum::NOT_STARTED->value => '-',
+                MatchStateEnum::HALF_TIME->value => 'HT',
+                MatchStateEnum::END->value => 'FT',
+                MatchStateEnum::PENALTY_SHOOT_OUT->value => 'PEN',
+                MatchStateEnum::FIRST_HALF->value => $this->runningMinute($kickoff ?: $scheduled, 1, 45),
+                MatchStateEnum::SECOND_HALF->value => $this->runningMinute($this->secondHalfKickoff($kickoff, $scheduled), 46, 90),
+                MatchStateEnum::OVERTIME->value,
+                MatchStateEnum::OVERTIME_DEPRECATED->value => $this->overtimeMinute($kickoff, $scheduled),
+                default => $matchStatus,
+            };
         });
+    }
+
+    /**
+     * The stored kick-off can still be the first-half one (or missing) right after
+     * the second half starts. Counting from it added the break to the clock and
+     * showed 90+ around the hour mark, so estimate the restart in that case.
+     */
+    private function secondHalfKickoff(int $kickoff, int $scheduled): int
+    {
+        $firstHalfStart = $scheduled ?: $kickoff;
+        if ($kickoff > 0 && $firstHalfStart > 0 && $kickoff >= $firstHalfStart + 50 * 60) {
+            return $kickoff;
+        }
+
+        $base = $kickoff ?: $scheduled;
+
+        return $base > 0 ? $base + self::FIRST_HALF_AND_BREAK_MINUTES * 60 : 0;
+    }
+
+    private function overtimeMinute(int $kickoff, int $scheduled): int|string
+    {
+        // Extra time starts well after the scheduled kick-off; anything earlier is a stale value.
+        if ($kickoff > 0 && $scheduled > 0 && $kickoff >= $scheduled + 100 * 60) {
+            return $this->runningMinute($kickoff, 91, 120);
+        }
+
+        return 'ET';
+    }
+
+    private function runningMinute(int $start, int $first, int $last): int|string
+    {
+        if ($start <= 0) {
+            return '-';
+        }
+
+        $minute = $first + intdiv(max(0, now()->timestamp - $start), 60);
+
+        return $minute > $last ? "{$last}+" : $minute;
     }
 
     /**
