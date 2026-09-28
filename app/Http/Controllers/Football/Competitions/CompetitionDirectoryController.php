@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Support\ScrapingCountryScope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -17,12 +19,76 @@ class CompetitionDirectoryController extends Controller
 {
     private const TYPES = [1 => 'league', 2 => 'cup', 3 => 'friendly'];
 
-    public function __invoke()
+    private const FILTERS = ['all', 'league', 'cup', 'live', 'today'];
+
+    private const SORTS = ['featured', 'az', 'busy'];
+
+    private const MAX_PER_PAGE = 96;
+
+    /**
+     * Paginated directory. Query: page, per_page, q (name/country search),
+     * filter (all|league|cup|live|today), sort (featured|az|busy).
+     * `summary` and `featured` describe the whole directory, not just this page.
+     */
+    public function __invoke(Request $request)
     {
         // Live/today counts over every competition are costly; a minute of staleness is fine here.
         $key = 'competition-directory:'.(ScrapingCountryScope::shouldApply() ? 'scoped' : 'all');
+        $all = collect(Cache::remember($key, 60, fn () => $this->directory()));
 
-        return $this->jsonResponse(Cache::remember($key, 60, fn () => $this->directory()), Response::HTTP_OK);
+        $filter = in_array($request->query('filter'), self::FILTERS, true) ? $request->query('filter') : 'all';
+        $sort = in_array($request->query('sort'), self::SORTS, true) ? $request->query('sort') : 'featured';
+        $perPage = max(1, min(self::MAX_PER_PAGE, (int) $request->query('per_page', 48)));
+        $page = max(1, (int) $request->query('page', 1));
+        $q = $this->normalize((string) $request->query('q', ''));
+
+        $list = $all->filter(fn (array $c) => $this->matchesFilter($c, $filter));
+        if ($q !== '') {
+            $list = $list->filter(fn (array $c) => collect([$c['name'] ?? null, $c['short_name'] ?? null, $c['country']['name'] ?? null, $c['category']['name'] ?? null])
+                ->filter()
+                ->contains(fn ($v) => str_contains($this->normalize((string) $v), $q)));
+        }
+        $list = match ($sort) {
+            'az' => $list->sortBy(fn (array $c) => $this->normalize((string) ($c['short_name'] ?: $c['name'])))->values(),
+            'busy' => $list->sortByDesc(fn (array $c) => $c['live_count'] * 100 + $c['today_count'] * 10 + $c['upcoming_count'])->values(),
+            default => $list->values(), // cached order: top competitions first, then priority
+        };
+
+        $total = $list->count();
+
+        return $this->jsonResponse([
+            'data' => $list->forPage($page, $perPage)->values(),
+            'meta' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => max(1, (int) ceil($total / $perPage)),
+            ],
+            'summary' => [
+                'total' => $all->count(),
+                'live' => $all->sum('live_count'),
+                'today' => $all->sum('today_count'),
+                'filters' => collect(self::FILTERS)
+                    ->mapWithKeys(fn (string $f) => [$f => $all->filter(fn (array $c) => $this->matchesFilter($c, $f))->count()]),
+            ],
+            'featured' => $all->where('is_top', true)->take(4)->values(),
+        ], Response::HTTP_OK);
+    }
+
+    private function matchesFilter(array $c, string $filter): bool
+    {
+        return match ($filter) {
+            'league' => $c['type'] === 'league',
+            'cup' => $c['type'] === 'cup',
+            'live' => $c['live_count'] > 0,
+            'today' => $c['today_count'] > 0,
+            default => true,
+        };
+    }
+
+    private function normalize(string $value): string
+    {
+        return trim(Str::lower(Str::ascii($value)));
     }
 
     private function directory(): array
