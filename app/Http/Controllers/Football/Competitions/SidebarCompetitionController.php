@@ -34,15 +34,17 @@ class SidebarCompetitionController extends Controller
     public function index(): JsonResponse
     {
         $data = Cache::remember($this->cacheKey('index'), self::CACHE_SECONDS, function () {
-            $european = $this->europeanQuery()->get(self::COLUMNS)
-                ->sortBy(fn (Competition $c) => [$this->europeanRank($c), $c->priority ?? PHP_INT_MAX, $c->name])
-                ->values();
-
+            // Admin-picked top competitions (any league or cup, UEFA included) lead the menu.
             $top = $this->baseQuery()
                 ->whereNotNull('top_order')
-                ->whereNotIn('competition_id', $european->pluck('competition_id'))
                 ->orderBy('top_order')
                 ->get(self::COLUMNS);
+
+            $european = $this->europeanQuery()
+                ->whereNotIn('competition_id', $top->pluck('competition_id'))
+                ->get(self::COLUMNS)
+                ->sortBy(fn (Competition $c) => [$this->europeanRank($c), $c->priority ?? PHP_INT_MAX, $c->name])
+                ->values();
 
             $shown = $european->pluck('competition_id')->merge($top->pluck('competition_id'));
 
