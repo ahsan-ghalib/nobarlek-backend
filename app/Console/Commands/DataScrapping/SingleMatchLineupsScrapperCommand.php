@@ -17,7 +17,8 @@ class SingleMatchLineupsScrapperCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'data-scrapping:single-match-lineups-scrapper-command';
+    protected $signature = 'data-scrapping:single-match-lineups-scrapper-command
+                            {--live : Fetch lineups for matches currently in play}';
 
     /**
      * The console command description.
@@ -31,6 +32,6 @@ class SingleMatchLineupsScrapperCommand extends Command
      */
     public function handle()
     {
-        dispatch(new SingleMatchLineUpsScrapperJob());
+        dispatch(new SingleMatchLineUpsScrapperJob((bool) $this->option('live')));
     }
 }

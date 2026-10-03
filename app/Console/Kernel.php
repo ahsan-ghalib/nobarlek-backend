@@ -38,7 +38,9 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('data-scrapping:season-team-statistics-scrapper-command')->hourly();
         $schedule->command('data-scrapping:season-player-statistics-scrapper-command')->hourlyAt(9);
-        $schedule->command('data-scrapping:single-match-lineups-scrapper-command')->hourlyAt(15);
+        // Lineups publish around kickoff; hourly was too slow for the live site.
+        $schedule->command('data-scrapping:single-match-lineups-scrapper-command')->everyFiveMinutes()->withoutOverlapping()->runInBackground();
+        $schedule->command('data-scrapping:single-match-lineups-scrapper-command --live')->everyFiveMinutes()->withoutOverlapping()->runInBackground();
         $schedule->command('data-scrapping:season-top-scorer-statistics-scrapper-command')->hourlyAt(17);
         // The hourly jobs above only follow the last hour of update events; refresh the full
         // scorer and player tables for current seasons so every league has top scorers/assists.
