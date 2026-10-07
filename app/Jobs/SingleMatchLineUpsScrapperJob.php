@@ -40,7 +40,10 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
     {
         $matches = $this->live
             ? $this->liveMatches()
-            : $this->recentlyUpdatedMatches();
+            : $this->recentlyUpdatedMatches()
+                ->merge($this->liveMatches())
+                ->unique('match_id')
+                ->values();
 
         foreach ($matches as $matchId) {
             (new SingleMatchLineupDataScrapingService())->scrapRealtimeMatchData(['uuid' => $matchId->match_id]);
