@@ -32,6 +32,10 @@ class SingleMatchLineupsScrapperCommand extends Command
      */
     public function handle()
     {
-        dispatch(new SingleMatchLineUpsScrapperJob((bool) $this->option('live')));
+        // This scraper is scheduled directly and must not depend on a separate queue
+        // worker being alive. Other jobs can remain queued; lineups are time-sensitive.
+        dispatch_sync(new SingleMatchLineUpsScrapperJob((bool) $this->option('live')));
+
+        return self::SUCCESS;
     }
 }
