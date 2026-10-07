@@ -67,26 +67,33 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
 
         return $this->scopedMatches()
             ->whereIn('match_id', $matchIds)
-            ->where('lineup', '=', 1)
             ->get();
     }
 
     /**
-     * Matches in the first half, half-time, second half, extra time, or penalties.
+     * Matches around kickoff and currently in play. The coverage flag is not a safe
+     * filter here: TheSports can publish the lineup before updating coverage.lineup.
      */
     private function liveMatches()
     {
         return $this->scopedMatches()
-            ->whereIn('status_id', [
-                MatchStateEnum::FIRST_HALF->value,
-                MatchStateEnum::HALF_TIME->value,
-                MatchStateEnum::SECOND_HALF->value,
-                MatchStateEnum::OVERTIME->value,
-                MatchStateEnum::OVERTIME_DEPRECATED->value,
-                MatchStateEnum::PENALTY_SHOOT_OUT->value,
-            ])
-            ->where('match_time', '>=', now()->subHours(4)->timestamp)
-            ->where('lineup', '=', 1)
+            ->where(function ($query) {
+                $query
+                    ->whereIn('status_id', [
+                        MatchStateEnum::FIRST_HALF->value,
+                        MatchStateEnum::HALF_TIME->value,
+                        MatchStateEnum::SECOND_HALF->value,
+                        MatchStateEnum::OVERTIME->value,
+                        MatchStateEnum::OVERTIME_DEPRECATED->value,
+                        MatchStateEnum::PENALTY_SHOOT_OUT->value,
+                    ])
+                    // Also poll the pre-kickoff window where lineups are commonly
+                    // released while the match is still "Not started".
+                    ->orWhereBetween('match_time', [
+                        now()->subHours(1)->timestamp,
+                        now()->addHours(2)->timestamp,
+                    ]);
+            })
             ->get();
     }
 
