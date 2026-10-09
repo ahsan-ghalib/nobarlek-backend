@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Enums\DataUpdatesTypeEnum;
-use App\Enums\MatchStateEnum;
 use App\Models\FootballData;
 use App\Models\FootballMatch;
 use App\Services\DataScrapping\SingleMatchLineupDataScrapingService;
@@ -18,19 +17,14 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $timeout = 900;
-
     protected string $time;
-
-    protected bool $live;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(bool $live = false)
+    public function __construct()
     {
-        $this->live = $live;
-        $this->time = now()->subHour()->startOfMinute()->toDateTimeString();
+        $this->time = now()->subHour()->startOfMinute();
     }
 
     /**
@@ -38,12 +32,7 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $matches = $this->live
-            ? $this->liveMatches()
-            : $this->recentlyUpdatedMatches()
-                ->merge($this->liveMatches())
-                ->unique('match_id')
-                ->values();
+        $matches = $this->recentlyUpdatedMatches();
 
         foreach ($matches as $matchId) {
             (new SingleMatchLineupDataScrapingService())->scrapRealtimeMatchData(['uuid' => $matchId->match_id]);
@@ -52,7 +41,7 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
     }
 
     /**
-     * Matches whose lineup TheSports flagged as updated in the last hour.
+     * Follow the vendor's lineup update feed and coverage flag.
      */
     private function recentlyUpdatedMatches()
     {
@@ -67,33 +56,7 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
 
         return $this->scopedMatches()
             ->whereIn('match_id', $matchIds)
-            ->get();
-    }
-
-    /**
-     * Matches around kickoff and currently in play. The coverage flag is not a safe
-     * filter here: TheSports can publish the lineup before updating coverage.lineup.
-     */
-    private function liveMatches()
-    {
-        return $this->scopedMatches()
-            ->where(function ($query) {
-                $query
-                    ->whereIn('status_id', [
-                        MatchStateEnum::FIRST_HALF->value,
-                        MatchStateEnum::HALF_TIME->value,
-                        MatchStateEnum::SECOND_HALF->value,
-                        MatchStateEnum::OVERTIME->value,
-                        MatchStateEnum::OVERTIME_DEPRECATED->value,
-                        MatchStateEnum::PENALTY_SHOOT_OUT->value,
-                    ])
-                    // Also poll the pre-kickoff window where lineups are commonly
-                    // released while the match is still "Not started".
-                    ->orWhereBetween('match_time', [
-                        now()->subHours(1)->timestamp,
-                        now()->addHours(2)->timestamp,
-                    ]);
-            })
+            ->where('lineup', '=', 1)
             ->get();
     }
 
