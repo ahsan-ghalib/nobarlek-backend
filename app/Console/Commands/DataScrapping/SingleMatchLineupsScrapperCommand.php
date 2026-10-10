@@ -17,7 +17,8 @@ class SingleMatchLineupsScrapperCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'data-scrapping:single-match-lineups-scrapper-command';
+    protected $signature = 'data-scrapping:single-match-lineups-scrapper-command
+                            {--match-id= : Refetch lineup for one TheSports match UUID}';
 
     /**
      * The console command description.
@@ -33,7 +34,7 @@ class SingleMatchLineupsScrapperCommand extends Command
     {
         // This scraper is scheduled directly and must not depend on a separate queue
         // worker being alive. Other jobs can remain queued; lineups are time-sensitive.
-        dispatch_sync(new SingleMatchLineUpsScrapperJob());
+        dispatch_sync(new SingleMatchLineUpsScrapperJob($this->option('match-id')));
 
         return self::SUCCESS;
     }
