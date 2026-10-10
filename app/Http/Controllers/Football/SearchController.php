@@ -8,6 +8,7 @@ use App\Http\Requests\SearchRequest;
 use App\Models\Competition;
 use App\Models\Player;
 use App\Models\Team;
+use App\Models\FootballMatch;
 use App\Support\ScrapingCountryScope;
 use App\Traits\JsonResponseTrait;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,8 +30,7 @@ class SearchController extends Controller
         $data = match ($request->search_by) {
             SearchByEnum::All->value => [
                 'Leagues' => $this->searchModel(Competition::query(), ['competition_id', 'name', 'name_aa', 'name_nl', 'name_vi', 'name_pt', 'name_br', 'name_es', 'name_fr', 'name_de', 'logo', 'country_id', 'priority'])->limit(10)->get(),
-                'Teams' => $this->searchModel(Team::query(), ['team_id', 'name', 'name_aa', 'name_nl', 'name_vi', 'name_pt', 'name_br', 'name_es', 'name_fr', 'name_de', 'logo', 'country_id'])->limit(10)->get(),
-                'Players' => $this->searchModel(Player::query(), ['player_id', 'name', 'name_aa', 'name_nl', 'name_vi', 'name_pt', 'name_br', 'name_es', 'name_fr', 'name_de', 'logo', 'country_id'])->limit(10)->get(),
+                'Matches' => $this->searchMatches(),
             ],
             SearchByEnum::Leagues->value => $this->searchModel(Competition::query(), ['id', 'competition_id', 'name', 'name_aa', 'name_nl', 'name_vi', 'name_pt', 'name_br', 'name_es', 'name_fr', 'name_de', 'logo', 'country_id', 'priority'])->paginate(10),
             SearchByEnum::Teams->value => $this->searchModel(Team::query(), ['id', 'team_id', 'name', 'name_aa', 'name_nl', 'name_vi', 'name_pt', 'name_br', 'name_es', 'name_fr', 'name_de', 'logo', 'country_id'])->paginate(10),
@@ -38,6 +38,22 @@ class SearchController extends Controller
         };
 
         return $this->jsonResponse(collect($data), Response::HTTP_OK);
+    }
+
+    private function searchMatches()
+    {
+        return FootballMatch::query()
+            ->with(['homeTeam:team_id,name', 'awayTeam:team_id,name'])
+            ->where(function ($query) {
+                $query->whereHas('homeTeam', fn ($q) => $q->where('name', 'like', '%'.$this->keyword.'%'))
+                    ->orWhereHas('awayTeam', fn ($q) => $q->where('name', 'like', '%'.$this->keyword.'%'));
+            })
+            ->limit(10)
+            ->get()
+            ->map(fn (FootballMatch $match) => [
+                'match_id' => $match->match_id,
+                'name' => ($match->homeTeam?->name ?? 'TBD').' vs '.($match->awayTeam?->name ?? 'TBD'),
+            ]);
     }
 
     public function searchModel($query, array $columns): Builder

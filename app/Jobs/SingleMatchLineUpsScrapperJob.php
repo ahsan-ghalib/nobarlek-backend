@@ -18,19 +18,17 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $timeout = 900;
-
     protected string $time;
 
-    protected bool $live;
+    protected ?string $matchId;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(bool $live = false)
+    public function __construct(?string $matchId = null)
     {
-        $this->live = $live;
-        $this->time = now()->subHour()->startOfMinute()->toDateTimeString();
+        $this->matchId = $matchId !== null && trim($matchId) !== '' ? trim($matchId) : null;
+        $this->time = now()->subHour()->startOfMinute();
     }
 
     /**
@@ -38,12 +36,16 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $matches = $this->live
-            ? $this->liveMatches()
-            : $this->recentlyUpdatedMatches()
-                ->merge($this->liveMatches())
-                ->unique('match_id')
-                ->values();
+        if ($this->matchId !== null) {
+            (new SingleMatchLineupDataScrapingService())->scrapRealtimeMatchData(['uuid' => $this->matchId]);
+
+            return;
+        }
+
+        $matches = $this->recentlyUpdatedMatches()
+            ->merge($this->liveMatches())
+            ->unique('match_id')
+            ->values();
 
         foreach ($matches as $matchId) {
             (new SingleMatchLineupDataScrapingService())->scrapRealtimeMatchData(['uuid' => $matchId->match_id]);
@@ -52,7 +54,8 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
     }
 
     /**
-     * Matches whose lineup TheSports flagged as updated in the last hour.
+     * Follow the vendor's lineup update feed. Coverage can lag behind the
+     * actual lineup response, so it is intentionally not used as a filter.
      */
     private function recentlyUpdatedMatches()
     {
@@ -70,30 +73,24 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
             ->get();
     }
 
-    /**
-     * Matches around kickoff and currently in play. The coverage flag is not a safe
-     * filter here: TheSports can publish the lineup before updating coverage.lineup.
-     */
+    /** Poll matches around kickoff and while they are in play. */
     private function liveMatches()
     {
         return $this->scopedMatches()
             ->where(function ($query) {
-                $query
-                    ->whereIn('status_id', [
-                        MatchStateEnum::FIRST_HALF->value,
-                        MatchStateEnum::HALF_TIME->value,
-                        MatchStateEnum::SECOND_HALF->value,
-                        MatchStateEnum::OVERTIME->value,
-                        MatchStateEnum::OVERTIME_DEPRECATED->value,
-                        MatchStateEnum::PENALTY_SHOOT_OUT->value,
-                    ])
-                    // Also poll the pre-kickoff window where lineups are commonly
-                    // released while the match is still "Not started".
-                    ->orWhereBetween('match_time', [
-                        now()->subHours(1)->timestamp,
-                        now()->addHours(2)->timestamp,
-                    ]);
+                $query->whereIn('status_id', [
+                    MatchStateEnum::FIRST_HALF->value,
+                    MatchStateEnum::HALF_TIME->value,
+                    MatchStateEnum::SECOND_HALF->value,
+                    MatchStateEnum::OVERTIME->value,
+                    MatchStateEnum::OVERTIME_DEPRECATED->value,
+                    MatchStateEnum::PENALTY_SHOOT_OUT->value,
+                ])->orWhereBetween('match_time', [
+                    now()->subHours(1)->timestamp,
+                    now()->addHours(2)->timestamp,
+                ]);
             })
+            ->limit(120)
             ->get();
     }
 
