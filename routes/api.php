@@ -81,6 +81,7 @@ use App\Http\Controllers\Football\Teams\TeamTransferController;
 use App\Http\Controllers\FooterController;
 use App\Http\Controllers\FooterMatchLinkController;
 use App\Http\Controllers\HomeFeaturedMatchController;
+use App\Http\Controllers\HomeIndonesiaMatchesController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\Seo\HomeSeoController as PublicHomeSeoController;
 use App\Http\Controllers\SiteSettingController;
@@ -115,6 +116,7 @@ Route::apiResource('news', NewsController::class)->only(['index', 'show']);
 Route::apiResource('blogs', BlogController::class)->only(['index', 'show']);
 Route::get('footer-match-links', FooterMatchLinkController::class);
 Route::get('home/featured-match', HomeFeaturedMatchController::class);
+Route::get('home/indonesia-matches', HomeIndonesiaMatchesController::class);
 Route::get('site-settings', SiteSettingController::class);
 
 Route::middleware(['scraping.api.scope'])->group(function () {
