@@ -42,13 +42,15 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
             return;
         }
 
-        $matches = $this->recentlyUpdatedMatches()
-            ->merge($this->liveMatches())
-            ->unique('match_id')
+        // Plain id lists: Eloquent's merge() dedupes by primary key, and these rows only
+        // select match_id, so merging the model collections collapsed them into one match.
+        $matchIds = $this->liveMatchIds()
+            ->merge($this->recentlyUpdatedMatchIds())
+            ->unique()
             ->values();
 
-        foreach ($matches as $matchId) {
-            (new SingleMatchLineupDataScrapingService())->scrapRealtimeMatchData(['uuid' => $matchId->match_id]);
+        foreach ($matchIds as $matchId) {
+            (new SingleMatchLineupDataScrapingService())->scrapRealtimeMatchData(['uuid' => $matchId]);
             sleep(1);
         }
     }
@@ -57,7 +59,7 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
      * Follow the vendor's lineup update feed. Coverage can lag behind the
      * actual lineup response, so it is intentionally not used as a filter.
      */
-    private function recentlyUpdatedMatches()
+    private function recentlyUpdatedMatchIds()
     {
         $matchIds = FootballData::query()
             ->select(['match_id'])
@@ -70,28 +72,35 @@ class SingleMatchLineUpsScrapperJob implements ShouldQueue
 
         return $this->scopedMatches()
             ->whereIn('match_id', $matchIds)
-            ->get();
+            ->pluck('match_id');
     }
 
-    /** Poll matches around kickoff and while they are in play. */
-    private function liveMatches()
+    /** Poll matches around kickoff and while they are in play; matches in play first. */
+    private function liveMatchIds()
     {
+        $live = [
+            MatchStateEnum::FIRST_HALF->value,
+            MatchStateEnum::HALF_TIME->value,
+            MatchStateEnum::SECOND_HALF->value,
+            MatchStateEnum::OVERTIME->value,
+            MatchStateEnum::OVERTIME_DEPRECATED->value,
+            MatchStateEnum::PENALTY_SHOOT_OUT->value,
+        ];
+
         return $this->scopedMatches()
-            ->where(function ($query) {
-                $query->whereIn('status_id', [
-                    MatchStateEnum::FIRST_HALF->value,
-                    MatchStateEnum::HALF_TIME->value,
-                    MatchStateEnum::SECOND_HALF->value,
-                    MatchStateEnum::OVERTIME->value,
-                    MatchStateEnum::OVERTIME_DEPRECATED->value,
-                    MatchStateEnum::PENALTY_SHOOT_OUT->value,
-                ])->orWhereBetween('match_time', [
-                    now()->subHours(1)->timestamp,
-                    now()->addHours(2)->timestamp,
-                ]);
+            ->where(function ($query) use ($live) {
+                $query->whereIn('status_id', $live)
+                    // A live status the feed never cleared is not a match in play.
+                    ->where('match_time', '>=', now()->subHours(4)->timestamp)
+                    ->orWhereBetween('match_time', [
+                        now()->subHours(1)->timestamp,
+                        now()->addHours(2)->timestamp,
+                    ]);
             })
+            ->orderByRaw('CASE WHEN status_id IN ('.implode(',', array_fill(0, count($live), '?')).') THEN 0 ELSE 1 END', $live)
+            ->orderBy('match_time')
             ->limit(120)
-            ->get();
+            ->pluck('match_id');
     }
 
     private function scopedMatches()
