@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Football\Matches\CompetitionFootballMatchController;
 use App\Models\Competition;
 use App\Models\Season;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CompetitionPageBootstrapController extends Controller
 {
@@ -23,26 +25,26 @@ class CompetitionPageBootstrapController extends Controller
         );
 
         $overview = $this->data(
-            (new CompetitionOverviewController)($request, $competition, $season)
+            fn () => (new CompetitionOverviewController)($request, $competition, $season)
         );
         $standings = $this->data(
-            (new CompetitionStandingController)->fullTeamStandings(
+            fn () => (new CompetitionStandingController)->fullTeamStandings(
                 $standingsRequest,
                 $competition,
                 $season
             )
         );
         $seasons = $this->data(
-            (new CompetitionSeasonController)($request, $competition)
+            fn () => (new CompetitionSeasonController)($request, $competition)
         );
         $results = $this->data(
-            (new CompetitionSeasonResultsController)($request, $competition, $season)
+            fn () => (new CompetitionSeasonResultsController)($request, $competition, $season)
         );
         $matches = $this->data(
-            (new CompetitionFootballMatchController)($request, $competition)
+            fn () => (new CompetitionFootballMatchController)($request, $competition)
         );
         $news = $this->data(
-            (new CompetitionNewsController)($request, $competition)
+            fn () => (new CompetitionNewsController)($request, $competition)
         );
 
         return $this->jsonResponse([
@@ -56,11 +58,19 @@ class CompetitionPageBootstrapController extends Controller
     }
 
     /**
+     * Sections abort with 404 when the competition has no current season (cups,
+     * friendlies); that must leave the section empty instead of failing the page.
+     *
+     * @param  Closure(): JsonResponse  $section
      * @return array<string, mixed>|array<int, mixed>
      */
-    private function data(JsonResponse $response): array
+    private function data(Closure $section): array
     {
-        $payload = $response->getData(true);
+        try {
+            $payload = $section()->getData(true);
+        } catch (HttpException) {
+            return [];
+        }
 
         return is_array($payload['data'] ?? null) ? $payload['data'] : [];
     }
