@@ -6,6 +6,7 @@ use App\Enums\MatchStateEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InvokeCompetitionRequest;
 use App\Models\Competition;
+use App\Models\FootballMatch;
 use App\Support\MatchStreamPresenter;
 use App\Support\MatchTimeQuery;
 use App\Support\ScrapingCountryScope;
@@ -16,8 +17,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class FootballMatchController extends Controller
 {
+    private const MAX_PER_PAGE = 100;
+
     /**
-     * Display a listing of the resource.
+     * Competitions with their matches for one day. With `page` (and optional
+     * `per_page`) the competitions are paginated and `meta` describes the whole day;
+     * without it every competition is returned, as older clients expect.
      */
     public function __invoke(InvokeCompetitionRequest $request): JsonResponse
     {
@@ -26,7 +31,7 @@ class FootballMatchController extends Controller
             ViewerTimeZone::fromRequest($request),
         );
 
-        $competitionsMatches = Competition::query()
+        $query = Competition::query()
             ->select(['competition_id', 'country_id', 'category_id', 'name', 'name_aa', 'name_nl', 'name_vi', 'name_pt', 'name_br', 'name_es', 'name_fr', 'name_de', 'short_name', 'cur_round', 'logo'])
             ->with([
                 'category:category_id,name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de',
@@ -52,35 +57,74 @@ class FootballMatchController extends Controller
                         'stream:match_id,sport_id,match_time,synced_at',
                         'matchOdd' => fn ($query) => $query->where('company_id', '=', 2)->where('type', '=', $request->odd_type),
                     ])
-                    ->when($request->is_live, function (Builder $query) {
-                        $query->whereIn('status_id', [
-                            MatchStateEnum::FIRST_HALF->value,
-                            MatchStateEnum::SECOND_HALF->value,
-                            MatchStateEnum::HALF_TIME->value,
-                            MatchStateEnum::OVERTIME->value,
-                            MatchStateEnum::OVERTIME_DEPRECATED->value,
-                            MatchStateEnum::PENALTY_SHOOT_OUT->value,
-                        ])
-                            // The feed stops sending matches it drops, which can leave a
-                            // live status behind for good; no real match runs 4h past kick-off.
-                            ->where('match_time', '>=', now()->subHours(4)->timestamp);
-                    })
-                    ->when($request->is_finished, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::END->value))
-                    ->when($request->is_scheduled, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::NOT_STARTED->value))
-                    ->when($request->boolean('has_stream'), function (Builder $query) {
-                        $query->whereHas('stream');
-                    })
-                    ->tap(fn (Builder $query) => MatchTimeQuery::applyBetween($query, $startDate, $endDate, true));
+                    ->tap(fn (Builder $query) => $this->applyMatchFilters($query, $request, $startDate, $endDate));
             })
-            ->orderedBySequence()
-            ->get();
+            ->orderedBySequence();
 
-        $competitionsMatches->each(function (Competition $competition) {
-            $competition->matches->each(fn ($match) => MatchStreamPresenter::attach($match));
-        });
+        if (! $request->has('page')) {
+            $competitionsMatches = $query->get();
+            $this->attachStreams($competitionsMatches);
+
+            return $this->jsonResponse([
+                'competition_matches' => $competitionsMatches,
+            ], SymfonyResponse::HTTP_OK);
+        }
+
+        $perPage = max(1, min(self::MAX_PER_PAGE, (int) $request->query('per_page', 25)));
+        $page = max(1, (int) $request->query('page', 1));
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $this->attachStreams($paginator->getCollection());
+
+        $dayMatches = fn () => FootballMatch::query()
+            ->tap(fn (Builder $q) => ScrapingCountryScope::restrictCompetitionsQuery($q))
+            ->tap(fn (Builder $q) => $this->applyMatchFilters($q, $request, $startDate, $endDate));
 
         return $this->jsonResponse([
-            'competition_matches' => $competitionsMatches,
+            'competition_matches' => $paginator->items(),
+            'meta' => [
+                'page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'total_matches' => $dayMatches()->count(),
+                'live_matches' => $dayMatches()->whereIn('status_id', $this->liveStatuses())->count(),
+            ],
         ], SymfonyResponse::HTTP_OK);
+    }
+
+    private function applyMatchFilters(Builder $query, InvokeCompetitionRequest $request, int $startDate, int $endDate): void
+    {
+        $query
+            ->when($request->is_live, function (Builder $query) {
+                $query->whereIn('status_id', $this->liveStatuses())
+                    // The feed stops sending matches it drops, which can leave a
+                    // live status behind for good; no real match runs 4h past kick-off.
+                    ->where('match_time', '>=', now()->subHours(4)->timestamp);
+            })
+            ->when($request->is_finished, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::END->value))
+            ->when($request->is_scheduled, fn (Builder $query) => $query->where('status_id', '=', MatchStateEnum::NOT_STARTED->value))
+            ->when($request->boolean('has_stream'), function (Builder $query) {
+                $query->whereHas('stream');
+            })
+            ->tap(fn (Builder $query) => MatchTimeQuery::applyBetween($query, $startDate, $endDate, true));
+    }
+
+    private function attachStreams(iterable $competitions): void
+    {
+        foreach ($competitions as $competition) {
+            $competition->matches->each(fn ($match) => MatchStreamPresenter::attach($match));
+        }
+    }
+
+    private function liveStatuses(): array
+    {
+        return [
+            MatchStateEnum::FIRST_HALF->value,
+            MatchStateEnum::SECOND_HALF->value,
+            MatchStateEnum::HALF_TIME->value,
+            MatchStateEnum::OVERTIME->value,
+            MatchStateEnum::OVERTIME_DEPRECATED->value,
+            MatchStateEnum::PENALTY_SHOOT_OUT->value,
+        ];
     }
 }
