@@ -7,7 +7,9 @@ use App\Models\MatchInjury;
 use App\Models\MatchLineUp;
 use App\Support\ScrapingCountryScope;
 use App\Traits\FootballScoreApiTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class SingleMatchLineupDataScrapingService
 {
@@ -49,11 +51,8 @@ class SingleMatchLineupDataScrapingService
                         'confirmed' => $this->realtimeData['results']['confirmed'] ?? 0,
                     ]);
 
-                MatchLineUp::query()
-                    ->upsert($this->mergePlayerData('lineup'), ['match_id', 'player_id']);
-
-                MatchInjury::query()
-                    ->upsert($this->mergePlayerData('injury'), ['match_id', 'player_id']);
+                $this->syncPlayers(MatchLineUp::query(), $this->mergePlayerData('lineup'));
+                $this->syncPlayers(MatchInjury::query(), $this->mergePlayerData('injury'));
             }
 
             return $this->realtimeData;
@@ -62,6 +61,26 @@ class SingleMatchLineupDataScrapingService
 
             return ['error' => $exception->getMessage()];
         }
+    }
+
+    /**
+     * Upsert the feed's rows and drop the match's rows the feed no longer lists.
+     * The vendor sometimes swaps a player's id (e.g. a corrected spelling), and the
+     * old row would otherwise stay and show as an extra starter.
+     */
+    private function syncPlayers(Builder $query, array $rows): void
+    {
+        if ($rows === []) {
+            return;
+        }
+
+        DB::transaction(function () use ($query, $rows) {
+            (clone $query)->upsert($rows, ['match_id', 'player_id']);
+            (clone $query)
+                ->where('match_id', '=', $this->params['uuid'])
+                ->whereNotIn('player_id', array_column($rows, 'player_id'))
+                ->delete();
+        });
     }
 
     public function mergePlayerData(string $type): array
