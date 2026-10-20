@@ -57,7 +57,9 @@ class FootballMatchController extends Controller
                         'stream:match_id,sport_id,match_time,synced_at',
                         'matchOdd' => fn ($query) => $query->where('company_id', '=', 2)->where('type', '=', $request->odd_type),
                     ])
-                    ->tap(fn (Builder $query) => $this->applyMatchFilters($query, $request, $startDate, $endDate));
+                    ->tap(fn (Builder $query) => $this->applyMatchFilters($query, $request, $startDate, $endDate))
+                    ->orderByRaw(MatchTimeQuery::unixExpression().' ASC')
+                    ->orderBy('match_id');
             })
             ->orderedBySequence();
 

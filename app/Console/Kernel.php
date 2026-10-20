@@ -57,6 +57,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('data-scrapping:player-transfer-scrapper-command')->dailyAt('1:00');
         $schedule->command('data-scrapping:team-scrapper-command')->dailyAt('2:07');
+        $schedule->command('data-scrapping:missing-teams-scrapper-command')->hourlyAt(23)->withoutOverlapping();
         $schedule->command('data-scrapping:player-scrapper-command')->dailyAt('3:07');
         $schedule->command('data-scrapping:coach-scrapper-command')->dailyAt('4:09');
         $schedule->command('data-scrapping:season-scrapper-command')->dailyAt('5:11');
