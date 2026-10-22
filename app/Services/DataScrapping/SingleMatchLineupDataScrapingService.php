@@ -51,7 +51,11 @@ class SingleMatchLineupDataScrapingService
                         'confirmed' => $this->realtimeData['results']['confirmed'] ?? 0,
                     ]);
 
+<<<<<<< HEAD
                 $this->syncPlayers(MatchLineUp::query(), $this->lineupRows());
+=======
+                $this->syncPlayers(MatchLineUp::query(), $this->mergePlayerData('lineup'));
+>>>>>>> origin/competitions-pagination
                 $this->syncPlayers(MatchInjury::query(), $this->mergePlayerData('injury'));
             }
 
@@ -83,6 +87,7 @@ class SingleMatchLineupDataScrapingService
         });
     }
 
+<<<<<<< HEAD
     /**
      * Keep only columns the lineups table has. Extra vendor fields make the
      * upsert fail, and then every player for that match is dropped.
@@ -155,6 +160,8 @@ class SingleMatchLineupDataScrapingService
         return ((int) ($row['x'] ?? 0) > 0) || ((int) ($row['y'] ?? 0) > 0);
     }
 
+=======
+>>>>>>> origin/competitions-pagination
     public function mergePlayerData(string $type): array
     {
         return $this->addMatchIdAndType($type, 'home')
