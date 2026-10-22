@@ -15,13 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class HomeUpcomingMatchesController extends Controller
 {
-    private const DAYS_AHEAD = 10;
+    private const DAYS_AHEAD = 21;
 
-    private const PER_COMPETITION = 4;
+    private const PER_COMPETITION = 2;
 
-    private const LIMIT = 16;
-
-    private const MAX_COMPETITIONS = 60;
+    private const MAX_COMPETITIONS = 24;
 
     public function __invoke(Request $request)
     {
@@ -29,7 +27,6 @@ class HomeUpcomingMatchesController extends Controller
             ->map(fn (string $id) => trim($id))
             ->filter(fn (string $id) => preg_match('/^[a-z0-9]{6,32}$/i', $id) === 1)
             ->unique()
-            ->sort()
             ->take(self::MAX_COMPETITIONS)
             ->values()
             ->all();
@@ -38,7 +35,8 @@ class HomeUpcomingMatchesController extends Controller
             return $this->jsonResponse([], Response::HTTP_OK);
         }
 
-        $data = Cache::remember('home:upcoming-matches:'.md5(implode(',', $ids)), 60, function () use ($ids) {
+        $cacheKey = 'home:upcoming-matches:v2:'.md5(implode(',', $ids));
+        $data = Cache::remember($cacheKey, 60, function () use ($ids) {
             $matches = FootballMatch::query()
                 ->select([
                     'match_id',
@@ -68,11 +66,16 @@ class HomeUpcomingMatchesController extends Controller
                 ->orderBy('match_time')
                 ->get();
 
-            $upcoming = $matches
-                ->groupBy('competition_id')
-                ->flatMap(fn ($group) => $group->take(self::PER_COMPETITION))
-                ->sortBy('match_time')
-                ->take(self::LIMIT)
+            // Keep the caller's competition order (the sidebar's top leagues) and
+            // the soonest fixtures inside each one. Sorting every match by kick-off
+            // let whichever league played first crowd the others out.
+            $byCompetition = $matches->groupBy('competition_id');
+            $upcoming = collect($ids)
+                ->flatMap(function (string $id) use ($byCompetition) {
+                    $group = $byCompetition->get($id);
+
+                    return $group ? $group->sortBy('match_time')->take(self::PER_COMPETITION) : [];
+                })
                 ->values();
 
             $upcoming->each(fn (FootballMatch $match) => MatchStreamPresenter::attach($match));

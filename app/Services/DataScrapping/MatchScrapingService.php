@@ -5,6 +5,7 @@ namespace App\Services\DataScrapping;
 use App\Enums\MatchStateEnum;
 use App\Enums\WeatherEnum;
 use App\Models\FootballMatch;
+use App\Support\MatchStatusGuard;
 use App\Support\ScrapingCountryScope;
 use App\Traits\FootballScoreApiTrait;
 use Carbon\Carbon;
@@ -69,7 +70,10 @@ class MatchScrapingService
                 ->chunk(300)
                 ->map(function ($matchResults) {
                     FootballMatch::query()
-                        ->upsert($matchResults->toArray(), ['match_id', 'competition_id']);
+                        ->upsert(
+                            MatchStatusGuard::protect($matchResults->values()->all()),
+                            ['match_id', 'competition_id'],
+                        );
                 });
 
             return $matchData['query'];

@@ -23,12 +23,23 @@ class MatchLineUpController extends Controller
     {
         $matchLineUpData = $this->lineups($footballMatch);
 
-        if ($matchLineUpData->isEmpty() && $this->shouldFetchOnDemand($footballMatch)) {
+        if ($matchLineUpData->isEmpty() && $this->mayFetchOnDemand($footballMatch)) {
+            $fetched = false;
             try {
-                (new SingleMatchLineupDataScrapingService())
+                $result = (new SingleMatchLineupDataScrapingService())
                     ->scrapRealtimeMatchData(['uuid' => $footballMatch->match_id]);
+                $fetched = is_array($result) && ! isset($result['error']);
             } catch (\Throwable $exception) {
                 info('lineups on-demand fetch failed: '.$exception->getMessage());
+            }
+            // Cache a successful call only. A failed call must be allowed to retry
+            // on the next page view, otherwise every match stays without a lineup.
+            if ($fetched) {
+                Cache::put(
+                    'lineups:on-demand:'.$footballMatch->match_id,
+                    true,
+                    now()->addMinutes(self::FETCH_THROTTLE_MINUTES),
+                );
             }
             $matchLineUpData = $this->lineups($footballMatch);
         }
@@ -39,9 +50,20 @@ class MatchLineUpController extends Controller
             return $v === true || $v === 1 || $v === '1';
         };
 
+        $starters = $matchLineUpData->filter($isStarting)->values();
+        // Coordinates mean the player was placed in the XI even when `first` was stored wrong.
+        if ($starters->isEmpty()) {
+            $starters = $matchLineUpData
+                ->filter(static fn ($row) => (int) $row->x > 0 || (int) $row->y > 0)
+                ->values();
+        }
+        $starterIds = $starters->pluck('player_id');
+
         $data = [
-            'match_lineups' => $matchLineUpData->filter($isStarting)->values(),
-            'on_the_bench' => $matchLineUpData->filter(static fn ($row) => ! $isStarting($row))->values(),
+            'match_lineups' => $starters,
+            'on_the_bench' => $matchLineUpData
+                ->reject(static fn ($row) => $starterIds->contains($row->player_id))
+                ->values(),
             'match_injuries' => $footballMatch->matchInjuries()->get(),
         ];
 
@@ -50,28 +72,29 @@ class MatchLineUpController extends Controller
 
     private function lineups(FootballMatch $footballMatch)
     {
-        return $footballMatch->matchLineups()
-            ->with([
-                'player:id,player_id,name,short_name,name_aa,name_nl,name_vi,name_pt,name_br,name_es,name_fr,name_de,logo,age',
-            ])
-            ->get();
+        try {
+            return $footballMatch->matchLineups()
+                ->with(['player:id,player_id,name,short_name,logo'])
+                ->get();
+        } catch (\Throwable $exception) {
+            info('lineups query failed: '.$exception->getMessage());
+
+            return $footballMatch->matchLineups()->get();
+        }
     }
 
     /**
      * The scheduled scraper only covers a window around kick-off, so a match it missed
-     * is fetched when someone opens it, at most once per throttle window.
+     * is fetched when someone opens it. The throttle is recorded only after a
+     * successful vendor response.
      */
-    private function shouldFetchOnDemand(FootballMatch $footballMatch): bool
+    private function mayFetchOnDemand(FootballMatch $footballMatch): bool
     {
         $kickoff = (int) $footballMatch->match_time;
         if ($kickoff <= 0 || $kickoff > now()->addMinutes(self::FETCH_FROM_KICKOFF_MINUTES)->timestamp) {
             return false;
         }
 
-        return Cache::add(
-            'lineups:on-demand:'.$footballMatch->match_id,
-            true,
-            now()->addMinutes(self::FETCH_THROTTLE_MINUTES),
-        );
+        return ! Cache::has('lineups:on-demand:'.$footballMatch->match_id);
     }
 }

@@ -51,7 +51,11 @@ class SingleMatchLineupDataScrapingService
                         'confirmed' => $this->realtimeData['results']['confirmed'] ?? 0,
                     ]);
 
+<<<<<<< HEAD
+                $this->syncPlayers(MatchLineUp::query(), $this->lineupRows());
+=======
                 $this->syncPlayers(MatchLineUp::query(), $this->mergePlayerData('lineup'));
+>>>>>>> origin/competitions-pagination
                 $this->syncPlayers(MatchInjury::query(), $this->mergePlayerData('injury'));
             }
 
@@ -83,6 +87,81 @@ class SingleMatchLineupDataScrapingService
         });
     }
 
+<<<<<<< HEAD
+    /**
+     * Keep only columns the lineups table has. Extra vendor fields make the
+     * upsert fail, and then every player for that match is dropped.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function lineupRows(): array
+    {
+        return array_values(array_filter(array_merge(
+            $this->mapLineupSide('home'),
+            $this->mapLineupSide('away'),
+        )));
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function mapLineupSide(string $side): array
+    {
+        $rows = $this->realtimeData['results']['lineup'][$side] ?? [];
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $playerId = trim((string) ($row['player_id'] ?? $row['id'] ?? ''));
+            if ($playerId === '') {
+                continue;
+            }
+            $out[] = [
+                'type' => $side,
+                'player_id' => $playerId,
+                'match_id' => (string) $this->params['uuid'],
+                'first' => $this->isStarter($row) ? 1 : 0,
+                'captain' => ! empty($row['captain']) ? 1 : 0,
+                'name' => (string) ($row['name'] ?? ''),
+                'logo' => (string) ($row['logo'] ?? ''),
+                'shirt_number' => (int) ($row['shirt_number'] ?? 0),
+                'position' => (string) ($row['position'] ?? ''),
+                'x' => (int) ($row['x'] ?? 0),
+                'y' => (int) ($row['y'] ?? 0),
+                'rating' => (string) ($row['rating'] ?? ''),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function isStarter(array $row): bool
+    {
+        $first = $row['first'] ?? null;
+        if ($first === true || $first === 1 || $first === '1') {
+            return true;
+        }
+        if ($first === false || $first === 0 || $first === '0') {
+            return false;
+        }
+        // Some feeds use status: 0 starter, 1 substitute.
+        if (isset($row['status']) && is_numeric($row['status'])) {
+            return (int) $row['status'] === 0;
+        }
+
+        return ((int) ($row['x'] ?? 0) > 0) || ((int) ($row['y'] ?? 0) > 0);
+    }
+
+=======
+>>>>>>> origin/competitions-pagination
     public function mergePlayerData(string $type): array
     {
         return $this->addMatchIdAndType($type, 'home')
