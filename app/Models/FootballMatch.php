@@ -64,6 +64,7 @@ class FootballMatch extends Model
     protected $appends = [
         'calculated_match_time',
         'match_time_formatted',
+        'match_clock',
     ];
 
     public function metaKeywords(): Attribute
@@ -106,6 +107,37 @@ class FootballMatch extends Model
     }
 
     /**
+     * Minute plus the seconds inside it, and the server time they were computed at,
+     * so the match page can tick the seconds between polls.
+     *
+     * @return array{minute: int|null, second: int|null, cap: int|null, running: bool, stoppage: bool, as_of: int}
+     */
+    public function matchClock(): Attribute
+    {
+        return new Attribute(get: function () {
+            $matchStatus = $this->attributes['status_id'] ?? null;
+            $scheduled = (int) ($this->attributes['match_time'] ?? 0);
+            $kickoff = (int) ($this->attributes['kickoff_time'] ?? 0);
+            $idle = [
+                'minute' => null,
+                'second' => null,
+                'cap' => null,
+                'running' => false,
+                'stoppage' => false,
+                'as_of' => now()->timestamp,
+            ];
+
+            return match ($matchStatus) {
+                MatchStateEnum::FIRST_HALF->value => $this->runningClock($kickoff ?: $scheduled, 1, 45),
+                MatchStateEnum::SECOND_HALF->value => $this->runningClock($this->secondHalfKickoff($kickoff, $scheduled), 46, 90),
+                MatchStateEnum::OVERTIME->value,
+                MatchStateEnum::OVERTIME_DEPRECATED->value => $this->overtimeClock($kickoff, $scheduled),
+                default => $idle,
+            };
+        });
+    }
+
+    /**
      * The stored kick-off can still be the first-half one (or missing) right after
      * the second half starts. Counting from it added the break to the clock and
      * showed 90+ around the hour mark, so estimate the restart in that case.
@@ -134,13 +166,62 @@ class FootballMatch extends Model
 
     private function runningMinute(int $start, int $first, int $last): int|string
     {
-        if ($start <= 0) {
+        $clock = $this->runningClock($start, $first, $last);
+
+        if ($clock['minute'] === null) {
             return '-';
         }
 
-        $minute = $first + intdiv(max(0, now()->timestamp - $start), 60);
+        return $clock['stoppage'] ? "{$clock['cap']}+" : $clock['minute'];
+    }
 
-        return $minute > $last ? "{$last}+" : $minute;
+    /**
+     * @return array{minute: int|null, second: int|null, cap: int|null, running: bool, stoppage: bool, as_of: int}
+     */
+    private function runningClock(int $start, int $first, int $last): array
+    {
+        $asOf = now()->timestamp;
+        if ($start <= 0) {
+            return [
+                'minute' => null,
+                'second' => null,
+                'cap' => $last,
+                'running' => false,
+                'stoppage' => false,
+                'as_of' => $asOf,
+            ];
+        }
+
+        $elapsed = max(0, $asOf - $start);
+        $minute = $first + intdiv($elapsed, 60);
+
+        return [
+            'minute' => $minute > $last ? $last : $minute,
+            'second' => $minute > $last ? null : $elapsed % 60,
+            'cap' => $last,
+            'running' => $minute <= $last,
+            'stoppage' => $minute > $last,
+            'as_of' => $asOf,
+        ];
+    }
+
+    /**
+     * @return array{minute: int|null, second: int|null, cap: int|null, running: bool, stoppage: bool, as_of: int}
+     */
+    private function overtimeClock(int $kickoff, int $scheduled): array
+    {
+        if ($kickoff > 0 && $scheduled > 0 && $kickoff >= $scheduled + 100 * 60) {
+            return $this->runningClock($kickoff, 91, 120);
+        }
+
+        return [
+            'minute' => null,
+            'second' => null,
+            'cap' => 120,
+            'running' => false,
+            'stoppage' => false,
+            'as_of' => now()->timestamp,
+        ];
     }
 
     /**
